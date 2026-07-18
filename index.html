@@ -326,6 +326,11 @@
         <span>New category name</span>
         <input type="text" id="up-newcat" placeholder="e.g. Music" autocomplete="off">
       </label>
+      <label class="field" id="up-newcat-icon-field" hidden>
+        <span>Category icon <em>(optional)</em></span>
+        <input type="text" id="up-newcat-icon" class="emoji-input" placeholder="🎵" autocomplete="off" maxlength="16">
+        <small class="field-hint">Type an emoji with your keyboard, or copy one from a site like emojipedia.org / getemoji.com and paste it here.</small>
+      </label>
       <label class="field">
         <span>Repository link (GitHub)</span>
         <div class="field-row">
@@ -350,6 +355,28 @@
         <button type="submit" class="btn btn-primary" data-cursor="pointer">Publish app</button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- ============ CATEGORY ICON POPUP (owner) ============ -->
+<div class="modal-overlay" id="icon-overlay">
+  <div class="modal icon-modal" role="dialog" aria-modal="true" aria-label="Change category icon">
+    <button class="modal-close" id="icon-close" data-cursor="pointer" aria-label="Close">✕</button>
+    <span class="modal-eyebrow">Owner area</span>
+    <h3>Icon for <span id="icon-cat-name">Category</span></h3>
+    <p>Type an emoji with your keyboard (Win + . on Windows, the emoji key on mobile), or copy one from a site like emojipedia.org and paste it below.</p>
+    <div class="icon-preview-row">
+      <span class="cat-ico icon-preview" id="icon-current" aria-hidden="true">•</span>
+      <span class="field-hint">Live preview</span>
+    </div>
+    <form class="login-form" id="icon-form" autocomplete="off">
+      <input type="text" id="icon-input" class="emoji-input" placeholder="e.g. 🎵 🧭 📚" autocomplete="off" maxlength="16">
+      <div class="upload-actions">
+        <button type="button" class="btn btn-outline" id="icon-reset" data-cursor="pointer" hidden>Reset to default</button>
+        <button type="submit" class="btn btn-primary" data-cursor="pointer">Save icon</button>
+      </div>
+    </form>
+    <p class="login-error" id="icon-error"></p>
   </div>
 </div>
 
