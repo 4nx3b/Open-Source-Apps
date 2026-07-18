@@ -322,6 +322,52 @@ kbd{
 .shortcut-list li{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--panel-border);font-size:14px;color:var(--text-dim);}
 .shortcut-list li:last-child{border-bottom:none;}
 
+/* ================= CATEGORY DIRECTORY ================= */
+.showcase-sub{ color:var(--text-dim); font-size:15px; line-height:1.6; max-width:560px; margin:16px auto 0; }
+
+.cat-grid{ display:flex; flex-wrap:wrap; gap:12px; max-width:1000px; margin:0 auto; padding:0 26px; justify-content:center; }
+.cat-pill{
+  display:inline-flex; align-items:center; gap:11px; padding:12px 18px; border-radius:100px;
+  background:var(--panel); border:1px solid var(--panel-border); backdrop-filter:blur(8px);
+  cursor:none; text-align:left; transition:transform .25s var(--ease), border-color .3s ease, background .3s ease;
+}
+.cat-pill:hover{ border-color:var(--accent); background:var(--accent-soft); transform:translateY(-2px); }
+.cat-pill .cat-ico{ width:32px;height:32px;border-radius:50%; display:flex;align-items:center;justify-content:center; background:rgba(255,255,255,.06); color:var(--accent); font-size:15px; flex-shrink:0; transition:background .3s ease; }
+.cat-pill:hover .cat-ico{ background:rgba(255,180,84,.22); }
+.cat-pill .cat-name{ font-size:14px; font-weight:600; color:var(--text); }
+.cat-pill .cat-count{ font-family:var(--font-mono); font-size:11px; color:var(--text-faint); background:rgba(255,255,255,.06); padding:2px 8px; border-radius:100px; margin-left:2px; }
+
+/* category popup */
+.cat-modal{ width:min(680px,100%); max-height:86vh; padding:28px 26px; display:flex; flex-direction:column; overflow:hidden; }
+.cat-modal .modal-close{ background:rgba(255,255,255,.06); }
+.cat-modal h3{ margin:10px 0 4px; }
+.cat-meta{ font-family:var(--font-mono); font-size:11.5px; color:var(--text-faint); text-transform:uppercase; letter-spacing:.05em; }
+
+.cat-toolbar{ display:flex; align-items:center; gap:10px; margin-top:18px; flex-wrap:wrap; }
+.pages-pill{ display:inline-flex; align-items:center; gap:4px; padding:5px; border-radius:100px; background:var(--panel); border:1px solid var(--panel-border); }
+.pages-pill .pg{ min-width:30px;height:30px; padding:0 9px; border-radius:100px; font-family:var(--font-mono); font-size:12px; color:var(--text-dim); display:inline-flex; align-items:center; justify-content:center; transition:background .2s,color .2s; }
+.pages-pill .pg:hover:not(:disabled){ color:var(--text); background:rgba(255,255,255,.06); }
+.pages-pill .pg.active{ background:var(--accent); color:#0a0a0a; font-weight:600; }
+.pages-pill .pg:disabled{ opacity:.3; cursor:default; }
+
+.sort-pill{ display:inline-flex; align-items:center; padding:4px; border-radius:100px; background:var(--panel); border:1px solid var(--panel-border); margin-left:auto; }
+.sort-pill .sort-opt{ padding:7px 15px; border-radius:100px; font-size:12.5px; font-weight:600; color:var(--text-dim); cursor:none; transition:background .2s,color .2s; }
+.sort-pill .sort-opt:hover{ color:var(--text); }
+.sort-pill .sort-opt.active{ background:var(--accent); color:#0a0a0a; }
+
+.cat-app-list{ overflow-y:auto; margin-top:18px; display:grid; grid-template-columns:1fr 1fr; gap:12px; padding-right:6px; flex:1; min-height:0; }
+.cat-app{ position:relative; overflow:hidden; padding:18px 16px; border-radius:var(--radius-md); background:var(--panel); border:1px solid var(--panel-border); display:flex; gap:13px; transform-style:preserve-3d; transition:transform .1s ease, border-color .3s ease; }
+.cat-app:hover{ border-color:var(--accent); }
+.cat-app:hover .card-glow{ opacity:1; }
+.cat-app .app-icon{ width:40px;height:40px;flex-shrink:0; font-size:17px; margin-bottom:0; }
+.cat-app h4{ font-size:15px; font-weight:600; margin-bottom:2px; }
+.cat-app p{ font-size:12.5px; color:var(--text-dim); line-height:1.5; margin:4px 0 10px; }
+.cat-app .app-tags{ margin-bottom:10px; }
+.cat-app .card-link{ font-size:12.5px; }
+.cat-empty{ grid-column:1/-1; text-align:center; color:var(--text-faint); font-family:var(--font-mono); font-size:13px; padding:30px 0; }
+
+@media (max-width:560px){ .cat-app-list{ grid-template-columns:1fr; } .cat-modal{ padding:24px 18px; } }
+
 /* ================= TOASTS ================= */
 .toast-stack{position:fixed;bottom:24px;right:24px;z-index:190;display:flex;flex-direction:column;gap:10px;align-items:flex-end;}
 .toast{

@@ -95,7 +95,7 @@
   <!-- ============ STATS ============ -->
   <section class="stats">
     <div class="stat reveal-up"><span class="stat-num" data-count="220">0</span><span class="stat-label">Apps listed</span></div>
-    <div class="stat reveal-up"><span class="stat-num" data-count="98">0</span><span class="stat-label">Categories</span></div>
+    <div class="stat reveal-up"><span class="stat-num" data-count="12">0</span><span class="stat-label">Categories</span></div>
     <div class="stat reveal-up"><span class="stat-num" data-count="0">0</span><span class="stat-label">Ads, ever</span></div>
     <div class="stat reveal-up"><span class="stat-num" data-count="100" data-suffix="%">0</span><span class="stat-label">Source available</span></div>
   </section>
@@ -110,68 +110,15 @@
     </div>
   </section>
 
-  <!-- ============ APPS — HORIZONTAL SHOWCASE ============ -->
+  <!-- ============ DIRECTORY — CATEGORIES ============ -->
   <section class="showcase" id="apps">
     <div class="showcase-head">
       <p class="eyebrow reveal-up">Directory</p>
       <h2 class="reveal-up">Pick your next daily driver.</h2>
+      <p class="showcase-sub reveal-up">Browse open source apps by what they do. Tap a category to open its collection — sort by newest or oldest, and page through the lot.</p>
     </div>
 
-    <div class="showcase-track" id="showcase-track">
-      <article class="app-card tilt-card" data-tags="Media">
-        <div class="card-glow"></div>
-        <span class="app-icon">♪</span>
-        <h3>Waveline</h3>
-        <p>Ad-free Android music player with synced lyrics and offline caching.</p>
-        <div class="app-tags"><span>Media</span><span>Android</span><span>MIT</span></div>
-        <a href="#" class="card-link" data-cursor="pointer">View repo <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M7 17L17 7M17 7H9M17 7V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
-      </article>
-
-      <article class="app-card tilt-card" data-tags="Productivity">
-        <div class="card-glow"></div>
-        <span class="app-icon">▤</span>
-        <h3>Ledgerly</h3>
-        <p>Local-first budgeting app. Your numbers never leave your device.</p>
-        <div class="app-tags"><span>Finance</span><span>Desktop</span><span>GPL-3.0</span></div>
-        <a href="#" class="card-link" data-cursor="pointer">View repo <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M7 17L17 7M17 7H9M17 7V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
-      </article>
-
-      <article class="app-card tilt-card" data-tags="Dev tools">
-        <div class="card-glow"></div>
-        <span class="app-icon">◧</span>
-        <h3>Splitscreen</h3>
-        <p>A tiling window manager for people who live in the terminal.</p>
-        <div class="app-tags"><span>Dev tools</span><span>Linux</span><span>MIT</span></div>
-        <a href="#" class="card-link" data-cursor="pointer">View repo <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M7 17L17 7M17 7H9M17 7V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
-      </article>
-
-      <article class="app-card tilt-card" data-tags="Notes">
-        <div class="card-glow"></div>
-        <span class="app-icon">✎</span>
-        <h3>Marginal</h3>
-        <p>Markdown notes with backlinks, synced over your own git remote.</p>
-        <div class="app-tags"><span>Notes</span><span>Cross-platform</span><span>Apache-2.0</span></div>
-        <a href="#" class="card-link" data-cursor="pointer">View repo <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M7 17L17 7M17 7H9M17 7V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
-      </article>
-
-      <article class="app-card tilt-card" data-tags="Media">
-        <div class="card-glow"></div>
-        <span class="app-icon">▶</span>
-        <h3>Reelhouse</h3>
-        <p>A minimal video player built around subtitles and playback speed.</p>
-        <div class="app-tags"><span>Media</span><span>Android</span><span>GPL-3.0</span></div>
-        <a href="#" class="card-link" data-cursor="pointer">View repo <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M7 17L17 7M17 7H9M17 7V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
-      </article>
-
-      <article class="app-card tilt-card" data-tags="Utilities">
-        <div class="card-glow"></div>
-        <span class="app-icon">⌘</span>
-        <h3>Rootkit</h3>
-        <p>Android root utilities and module manager, no ads, no bloat.</p>
-        <div class="app-tags"><span>Utilities</span><span>Android</span><span>MIT</span></div>
-        <a href="#" class="card-link" data-cursor="pointer">View repo <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M7 17L17 7M17 7H9M17 7V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
-      </article>
-    </div>
+    <div class="cat-grid reveal-up" id="cat-grid"><!-- category pills injected by js/categories.js --></div>
   </section>
 
   <!-- ============ FEATURES ============ -->
@@ -280,6 +227,7 @@
     </div>
     <ul class="palette-results" id="palette-results">
       <li data-href="#apps"><span>Browse the directory</span><em>Section</em></li>
+      <li data-href="#apps"><span>Browse categories</span><em>Categories</em></li>
       <li data-href="#features"><span>Why Openhouse</span><em>Section</em></li>
       <li data-href="#submit"><span>Submit an app</span><em>Section</em></li>
       <li data-href="#top"><span>Waveline — music player</span><em>App</em></li>
@@ -318,6 +266,26 @@
   </div>
 </div>
 
+<!-- ============ CATEGORY POPUP ============ -->
+<div class="modal-overlay" id="cat-overlay">
+  <div class="modal cat-modal" role="dialog" aria-modal="true" aria-label="Category">
+    <button class="modal-close" id="cat-close" data-cursor="pointer" aria-label="Close">✕</button>
+    <span class="modal-eyebrow">Directory</span>
+    <h3 id="cat-title">Category</h3>
+    <p class="cat-meta" id="cat-meta">0 apps</p>
+
+    <div class="cat-toolbar">
+      <div class="pages-pill" id="cat-pages" aria-label="Pages"></div>
+      <div class="sort-pill" id="cat-sort" role="group" aria-label="Sort by">
+        <button class="sort-opt active" data-sort="newest" data-cursor="pointer">Newest</button>
+        <button class="sort-opt" data-sort="oldest" data-cursor="pointer">Oldest</button>
+      </div>
+    </div>
+
+    <div class="cat-app-list" id="cat-list"></div>
+  </div>
+</div>
+
 <!-- ============ TOASTS ============ -->
 <div class="toast-stack" id="toast-stack"></div>
 
@@ -326,5 +294,6 @@
 <script src="https://unpkg.com/lenis@1.1.14/dist/lenis.min.js"></script>
 <script src="js/particles.js"></script>
 <script src="js/main.js"></script>
+<script src="js/categories.js"></script>
 </body>
 </html>
