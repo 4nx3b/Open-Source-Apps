@@ -51,6 +51,15 @@
     <kbd>⌘K</kbd>
   </button>
 
+  <button class="icon-btn" id="admin-login-trigger" data-cursor="pointer" title="Owner sign in" aria-label="Owner sign in">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M8 11V8a4 4 0 1 1 8 0v3" stroke="currentColor" stroke-width="1.8"/></svg>
+  </button>
+  <div class="admin-actions" id="admin-actions" hidden>
+    <button class="admin-upload" id="admin-upload-trigger" data-cursor="pointer">＋ Upload app</button>
+    <button class="icon-btn" id="admin-logout-trigger" data-cursor="pointer" title="Sign out" aria-label="Sign out">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M14 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M9 12h11m0 0l-3-3m3 3l-3 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+  </div>
   <button class="icon-btn" id="shortcuts-trigger" data-cursor="pointer" title="Keyboard shortcuts" aria-label="Keyboard shortcuts">?</button>
 </header>
 
@@ -283,6 +292,68 @@
     </div>
 
     <div class="cat-app-list" id="cat-list"></div>
+  </div>
+</div>
+
+<!-- ============ OWNER LOGIN POPUP ============ -->
+<div class="modal-overlay" id="login-overlay">
+  <div class="modal login-modal" role="dialog" aria-modal="true" aria-label="Owner sign in">
+    <button class="modal-close" id="login-close" data-cursor="pointer" aria-label="Close">✕</button>
+    <span class="modal-eyebrow">Owner area</span>
+    <h3>Sign in</h3>
+    <p>Enter the owner password to manage the directory.</p>
+    <form class="login-form" id="login-form" autocomplete="off">
+      <input type="password" id="login-pass" placeholder="Password" autocomplete="off">
+      <button type="submit" class="btn btn-primary" data-cursor="pointer">Sign in</button>
+    </form>
+    <p class="login-error" id="login-error"></p>
+  </div>
+</div>
+
+<!-- ============ UPLOAD APP POPUP ============ -->
+<div class="modal-overlay" id="upload-overlay">
+  <div class="modal upload-modal" role="dialog" aria-modal="true" aria-label="Upload app">
+    <button class="modal-close" id="upload-close" data-cursor="pointer" aria-label="Close">✕</button>
+    <span class="modal-eyebrow">Owner area</span>
+    <h3>Upload an app</h3>
+    <p class="upload-sub">List a new open source app in the directory.</p>
+    <form class="upload-form" id="upload-form" autocomplete="off">
+      <label class="field">
+        <span>App name</span>
+        <input type="text" id="up-name" placeholder="e.g. Waveline" autocomplete="off">
+      </label>
+      <label class="field">
+        <span>Category</span>
+        <select id="up-category"></select>
+      </label>
+      <label class="field" id="up-newcat-field" hidden>
+        <span>New category name</span>
+        <input type="text" id="up-newcat" placeholder="e.g. Music" autocomplete="off">
+      </label>
+      <label class="field">
+        <span>Repository link (GitHub)</span>
+        <div class="field-row">
+          <input type="url" id="up-repo" placeholder="https://github.com/owner/repo" autocomplete="off">
+          <button type="button" class="btn btn-outline" id="up-fetch" data-cursor="pointer">Auto-fill</button>
+        </div>
+        <small class="field-hint" id="up-repo-hint">Paste a GitHub repo URL and we'll pull the description automatically.</small>
+      </label>
+      <label class="field">
+        <span>Description</span>
+        <textarea id="up-desc" rows="3" placeholder="What does this app do?"></textarea>
+      </label>
+      <label class="field">
+        <span>Thumbnail <em>(optional)</em></span>
+        <input type="file" id="up-thumb" accept="image/*">
+        <img class="thumb-preview" id="up-thumb-preview" alt="" hidden>
+      </label>
+      <input type="hidden" id="up-license">
+      <p class="login-error" id="upload-error"></p>
+      <div class="upload-actions">
+        <button type="button" class="btn btn-outline" id="upload-cancel" data-cursor="pointer">Cancel</button>
+        <button type="submit" class="btn btn-primary" data-cursor="pointer">Publish app</button>
+      </div>
+    </form>
   </div>
 </div>
 
