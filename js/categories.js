@@ -92,13 +92,13 @@
 
   /* ---------------- CATEGORY PILLS ---------------- */
   function renderGrid(){
-    grid.innerHTML = ORDER.map(cat => {
+    grid.innerHTML = ORDER.map((cat, idx) => {
       const n = (BY_CAT[cat] || []).length;
       const acts = isAdmin
         ? `<span class="cat-act cat-act-icon" role="button" tabindex="0" data-act="icon" title="Change icon" aria-label="Change icon for ${esc(cat)}">✎</span>
            <span class="cat-act cat-act-del" role="button" tabindex="0" data-act="del" title="Delete category" aria-label="Delete ${esc(cat)} category">✕</span>`
         : '';
-      return `<button class="cat-pill" data-cat="${esc(cat)}" data-cursor="pointer" aria-label="Open ${esc(cat)} category">
+      return `<button class="cat-pill" data-cat="${esc(cat)}" data-cursor="pointer" aria-label="Open ${esc(cat)} category" style="--i:${idx}">
         <span class="cat-ico">${esc(glyphFor(cat))}</span>
         <span class="cat-name">${esc(cat)}</span>
         <span class="cat-count">${n}</span>
