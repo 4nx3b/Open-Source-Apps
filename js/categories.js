@@ -77,7 +77,7 @@
   }
 
   /* ---------------- STATE ---------------- */
-  const PAGE_SIZE = 6;
+  const PAGE_SIZE = 3; // 3 apps per page; new apps flow onto the next page
   const cur = { cat:null, sort:'newest', page:1 };
 
   /* ---------------- DIRECTORY ELEMENTS ---------------- */
@@ -270,7 +270,6 @@
         <h4>${esc(a.name)}</h4>
         <p>${esc(a.desc)}</p>
         <div class="app-tags">${tags}</div>
-        <button class="card-link" data-cursor="pointer">Open repo <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M7 17L17 7M17 7H9M17 7V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       </div>
     </article>`;
   }
