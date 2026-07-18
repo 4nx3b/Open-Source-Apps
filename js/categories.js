@@ -140,6 +140,7 @@
 
   /* ---------------- OPEN / CLOSE (directory popup) ---------------- */
   function openCat(cat){
+    closeMenu();
     cur.cat = cat;
     cur.sort = 'newest';
     cur.page = 1;
@@ -264,11 +265,13 @@
   }
 
   function refreshAdminUI(){
-    $('#admin-login-trigger').hidden = isAdmin;
-    $('#admin-actions').hidden = !isAdmin;
+    $('#admin-signin-item').hidden = isAdmin;
+    $('#admin-upload-item').hidden = !isAdmin;
+    $('#admin-signout-item').hidden = !isAdmin;
   }
 
   function openLogin(){
+    closeMenu();
     $('#login-error').textContent = '';
     $('#login-pass').value = '';
     $('#login-overlay').classList.add('open');
@@ -276,7 +279,24 @@
   }
   function closeLogin(){ $('#login-overlay').classList.remove('open'); }
 
-  $('#admin-login-trigger').addEventListener('click', openLogin);
+  /* overflow menu (top bar) */
+  const adminMenuWrap = $('#admin-menu-wrap');
+  const adminMenu = $('#admin-menu');
+  const adminMenuTrigger = $('#admin-menu-trigger');
+  function openMenu(){ adminMenu.classList.add('open'); adminMenuTrigger.setAttribute('aria-expanded','true'); }
+  function closeMenu(){ adminMenu.classList.remove('open'); adminMenuTrigger.setAttribute('aria-expanded','false'); }
+  adminMenuTrigger.addEventListener('click', e => { e.stopPropagation(); adminMenu.classList.contains('open') ? closeMenu() : openMenu(); });
+  document.addEventListener('click', e => { if(adminMenuWrap && !adminMenuWrap.contains(e.target)) closeMenu(); });
+  $('#admin-signin-item').addEventListener('click', () => { closeMenu(); openLogin(); });
+  $('#admin-upload-item').addEventListener('click', () => { if(isAdmin){ closeMenu(); openUpload(); } });
+  $('#admin-signout-item').addEventListener('click', () => {
+    closeMenu();
+    isAdmin = false;
+    try { sessionStorage.removeItem('openhouse-admin'); } catch(e){}
+    refreshAdminUI();
+    toast('Signed out.');
+  });
+
   $('#login-close').addEventListener('click', closeLogin);
   $('#login-overlay').addEventListener('click', e => { if(e.target === $('#login-overlay')) closeLogin(); });
   $('#login-form').addEventListener('submit', e => {
@@ -292,15 +312,9 @@
     }
   });
 
-  $('#admin-logout-trigger').addEventListener('click', () => {
-    isAdmin = false;
-    try { sessionStorage.removeItem('openhouse-admin'); } catch(e){}
-    refreshAdminUI();
-    toast('Signed out.');
-  });
+  /* sign-out handling moved into the overflow menu (see above) */
 
   /* ---------------- UPLOAD FLOW ---------------- */
-  const loginTrigger = $('#admin-login-trigger');
   const uploadOverlay = $('#upload-overlay');
   let pickedThumb = null, repoThumb = '';
 
@@ -317,6 +331,7 @@
   }
 
   function openUpload(){
+    closeMenu();
     $('#upload-form').reset();
     $('#up-license').value = '';
     $('#up-repo-hint').textContent = 'Paste a GitHub repo URL and we\'ll pull the description automatically.';
@@ -329,7 +344,6 @@
   }
   function closeUpload(){ uploadOverlay.classList.remove('open'); }
 
-  $('#admin-upload-trigger').addEventListener('click', () => { if(isAdmin) openUpload(); });
   $('#upload-close').addEventListener('click', closeUpload);
   $('#upload-cancel').addEventListener('click', closeUpload);
   $('#upload-overlay').addEventListener('click', e => { if(e.target === uploadOverlay) closeUpload(); });
@@ -441,6 +455,7 @@
   /* ---------------- GLOBAL ESCAPE ---------------- */
   document.addEventListener('keydown', e => {
     if(e.key !== 'Escape') return;
+    if(adminMenu && adminMenu.classList.contains('open')){ closeMenu(); return; }
     if($('#cat-overlay').classList.contains('open')) closeCat();
     else if(uploadOverlay.classList.contains('open')) closeUpload();
     else if($('#login-overlay').classList.contains('open')) closeLogin();

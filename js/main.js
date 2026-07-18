@@ -35,11 +35,13 @@
   function animateHeroTitle(){
     const el = $('#hero-title');
     if(!el) return;
-    const text = el.innerHTML.split('<br>');
-    el.innerHTML = text.map(line =>
-      `<span class="line">${line.split('').map(ch =>
-        `<span class="char" style="opacity:0;transform:translateY(28px) rotate(4deg)">${ch === ' ' ? '&nbsp;' : ch}</span>`
-      ).join('')}</span>${text.length>1?'<br>':''}`
+    const lines = el.innerHTML.split('<br>');
+    el.innerHTML = lines.map(line =>
+      `<span class="line">${ line.split(' ').map(word =>
+          `<span class="word">${ word.split('').map(ch =>
+            `<span class="char" style="opacity:0;transform:translateY(28px) rotate(4deg)">${ch === ' ' ? '&nbsp;' : ch}</span>`
+          ).join('') }</span>`
+        ).join(' ') }</span>${lines.length>1?'<br>':''}`
     ).join('');
     const chars = $$('.char', el);
     if(reduced || typeof gsap === 'undefined'){
