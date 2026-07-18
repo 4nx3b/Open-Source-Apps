@@ -435,3 +435,18 @@ body.modal-open{ pointer-events:none; overflow:hidden; }
 .upload-actions{ display:flex; gap:12px; justify-content:flex-end; margin-top:6px; }
 .upload-sub{ color:var(--text-dim); font-size:14px; margin-top:4px; }
 .cat-thumb{ width:40px; height:40px; border-radius:10px; object-fit:cover; flex-shrink:0; }
+
+/* ================= TOP-BAR OVERFLOW MENU ================= */
+.admin-menu-wrap{ position:relative; display:flex; align-items:center; }
+.admin-menu{ position:absolute; top:calc(100% + 10px); right:0; min-width:184px; background:#101013; border:1px solid var(--panel-border); border-radius:var(--radius-md); padding:6px; display:none; flex-direction:column; gap:2px; z-index:70; box-shadow:0 20px 50px -14px rgba(0,0,0,.6); }
+.admin-menu.open{ display:flex; }
+.admin-menu-item{ display:flex; align-items:center; gap:10px; padding:11px 12px; border-radius:10px; font-size:14px; font-weight:600; color:var(--text-dim); background:none; border:none; width:100%; text-align:left; cursor:none; transition:background .2s, color .2s; }
+.admin-menu-item:hover{ background:var(--accent-soft); color:var(--text); }
+.admin-menu-item[hidden]{ display:none; }
+
+/* keep hero title words intact (don't break mid-word) */
+.split-title .word{ display:inline-block; white-space:nowrap; }
+
+/* stop long app descriptions from being clipped inside cards */
+.cat-app-body{ min-width:0; }
+.cat-app p{ overflow-wrap:anywhere; word-break:break-word; }
