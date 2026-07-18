@@ -438,8 +438,8 @@ body.modal-open{ pointer-events:none; overflow:hidden; }
 
 /* ================= TOP-BAR OVERFLOW MENU ================= */
 .admin-menu-wrap{ position:relative; display:flex; align-items:center; }
-.admin-menu{ position:absolute; top:calc(100% + 10px); right:0; min-width:184px; background:#101013; border:1px solid var(--panel-border); border-radius:var(--radius-md); padding:6px; display:none; flex-direction:column; gap:2px; z-index:70; box-shadow:0 20px 50px -14px rgba(0,0,0,.6); }
-.admin-menu.open{ display:flex; }
+.admin-menu{ position:absolute; top:calc(100% + 10px); right:0; min-width:184px; background:rgba(16,16,19,.72); border:1px solid var(--panel-border); border-radius:var(--radius-md); padding:6px; display:flex; flex-direction:column; gap:2px; z-index:70; box-shadow:0 20px 50px -14px rgba(0,0,0,.6); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); opacity:0; visibility:hidden; transform:translateY(-8px) scale(.98); transform-origin:top right; transition:opacity .2s var(--ease), transform .2s var(--ease), visibility .2s; }
+.admin-menu.open{ opacity:1; visibility:visible; transform:translateY(0) scale(1); }
 .admin-menu-item{ display:flex; align-items:center; gap:10px; padding:11px 12px; border-radius:10px; font-size:14px; font-weight:600; color:var(--text-dim); background:none; border:none; width:100%; text-align:left; cursor:none; transition:background .2s, color .2s; }
 .admin-menu-item:hover{ background:var(--accent-soft); color:var(--text); }
 .admin-menu-item[hidden]{ display:none; }
@@ -450,3 +450,15 @@ body.modal-open{ pointer-events:none; overflow:hidden; }
 /* stop long app descriptions from being clipped inside cards */
 .cat-app-body{ min-width:0; }
 .cat-app p{ overflow-wrap:anywhere; word-break:break-word; }
+
+/* ================= POLISH ================= */
+/* staggered entrance for app cards inside popups */
+@keyframes catCardIn{ from{ opacity:0; transform:translateY(14px) scale(.98); } to{ opacity:1; transform:none; } }
+.cat-app{ animation:catCardIn .5s var(--ease) both; }
+
+/* softer glow on category pills */
+.cat-pill:hover{ box-shadow:0 12px 30px -14px var(--accent-glow); }
+
+/* nicer empty state */
+.cat-empty{ grid-column:1/-1; text-align:center; color:var(--text-faint); font-family:var(--font-mono); font-size:13px; padding:42px 0; display:flex; flex-direction:column; align-items:center; gap:12px; }
+.cat-empty::before{ content:'∅'; font-size:28px; color:var(--accent); opacity:.55; }
