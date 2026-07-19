@@ -724,10 +724,6 @@
       document.body.classList.toggle('modal-open', anyOpen);
     });
     overlays.forEach(o => obs.observe(o, { attributes: true, attributeFilter: ['class'] }));
-  } else {
-    // Fallback: patch the open/close helpers
-    const _open = openCat, _close = closeCat;
-    // (older browsers) best-effort — leave as-is
   }
 
   /* ---------------- GLOBAL ESCAPE ---------------- */

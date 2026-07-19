@@ -83,29 +83,11 @@
     span.closest('.brand').addEventListener('mouseenter', () => scrambleText(span));
   });
 
-  /* ============ CUSTOM CURSOR ============ */
-  const cursorDot = $('#cursor-dot');
-  const cursorRing = $('#cursor-ring');
-  if(!isTouch && cursorDot && cursorRing){
-    let mx=innerWidth/2, my=innerHeight/2, rx=mx, ry=my;
-    window.addEventListener('pointermove', e => { mx = e.clientX; my = e.clientY; });
-    function loop(){
-      cursorDot.style.transform = `translate(${mx}px,${my}px) translate(-50%,-50%)`;
-      rx += (mx-rx)*0.18; ry += (my-ry)*0.18;
-      cursorRing.style.transform = `translate(${rx}px,${ry}px) translate(-50%,-50%)`;
-      requestAnimationFrame(loop);
-    }
-    loop();
-
-    $$('[data-cursor="pointer"], a, button').forEach(el => {
-      el.addEventListener('mouseenter', () => cursorRing.classList.add('hovered'));
-      el.addEventListener('mouseleave', () => cursorRing.classList.remove('hovered'));
-    });
+  /* ============ CLICK PARTICLE BURSTS ============ */
+  if(!isTouch){
     window.addEventListener('pointerdown', (e) => {
-      cursorRing.classList.add('clicked');
       if(window.__particleBurst) window.__particleBurst(e.clientX, e.clientY);
     });
-    window.addEventListener('pointerup', () => cursorRing.classList.remove('clicked'));
   }
 
   /* ============ MOUSE SPOTLIGHT ============ */
@@ -231,6 +213,53 @@
     els.forEach(el => io.observe(el));
   }
 
+  /* ============ TYPEWRITER HEADINGS ============ */
+  // Section headings type themselves out (mono font + caret) when scrolled
+  // into view. Falls back to instant text when reduced-motion is on.
+  const typeEls = $$('[data-typewrite]');
+  if(typeEls.length && !reduced){
+    typeEls.forEach(el => {
+      const text = el.textContent.trim();
+      el.dataset.text = text;
+      // ghost keeps the layout height; live gets typed over it
+      el.innerHTML = '<span class="tw-ghost" aria-hidden="true">' + el.innerHTML.trim() + '</span>'
+                   + '<span class="tw-live" aria-hidden="true"></span>';
+      el.setAttribute('aria-label', text);
+    });
+    if('IntersectionObserver' in window){
+      const twIo = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if(!entry.isIntersecting) return;
+          twIo.unobserve(entry.target);
+          typewrite(entry.target);
+        });
+      }, { threshold: 0.6 });
+      typeEls.forEach(el => twIo.observe(el));
+    } else {
+      typeEls.forEach(typewrite);
+    }
+  }
+  function typewrite(el){
+    const text = el.dataset.text;
+    const live = el.querySelector('.tw-live');
+    if(!live) return;
+    el.classList.add('tw-typing');
+    let i = 0;
+    (function tick(){
+      i++;
+      live.textContent = text.slice(0, i);
+      if(i < text.length){
+        // slight human jitter; brief pause after punctuation
+        const ch = text[i - 1];
+        const delay = /[.,!?]/.test(ch) ? 220 : 26 + Math.random() * 40;
+        setTimeout(tick, delay);
+      } else {
+        // keep the caret blinking briefly, then settle
+        setTimeout(() => el.classList.remove('tw-typing'), 1600);
+      }
+    })();
+  }
+
   /* ============ STATS COUNT-UP ============ */
   const statEls = $$('.stat-num');
   if(statEls.length && 'IntersectionObserver' in window){
@@ -260,9 +289,36 @@
   const storySection = $('#story');
   const storyLines = $$('.story-line');
   if(storySection && storyLines.length){
+    // typewriter treatment: each line types itself out when it becomes active
+    storyLines.forEach(line => { line.dataset.text = line.textContent.trim(); });
+    let activeIdx = -1;
+    const timers = new Map();
+    function typeLine(line){
+      const text = line.dataset.text;
+      if(reduced){ line.textContent = text; return; }
+      clearInterval(timers.get(line));
+      let i = 0;
+      line.textContent = '';
+      line.classList.add('tw-typing-line');
+      const iv = setInterval(() => {
+        i++;
+        line.textContent = text.slice(0, i);
+        if(i >= text.length){
+          clearInterval(iv);
+          setTimeout(() => line.classList.remove('tw-typing-line'), 900);
+        }
+      }, 30);
+      timers.set(line, iv);
+    }
     function setActiveLine(ratio){
       const idx = Math.min(storyLines.length - 1, Math.floor(ratio * storyLines.length));
-      storyLines.forEach((line, i) => line.setAttribute('data-active', i === idx ? 'true' : 'false'));
+      if(idx === activeIdx) return;
+      activeIdx = idx;
+      storyLines.forEach((line, i) => {
+        const on = i === idx;
+        line.setAttribute('data-active', on ? 'true' : 'false');
+        if(on) typeLine(line);
+      });
     }
     if(hasGsap && !reduced){
       ScrollTrigger.create({
