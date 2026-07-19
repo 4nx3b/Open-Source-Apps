@@ -136,6 +136,14 @@ begin
   delete from public.apps where cat = p_cat;
 end $$;
 
+create or replace function public.owner_set_tags(p_pass text, p_id bigint, p_tags jsonb)
+returns void language plpgsql security definer set search_path = ''
+as $$
+begin
+  if not public.owner_check(p_pass) then raise exception 'unauthorized'; end if;
+  update public.apps set tags = coalesce(p_tags, '[]'::jsonb) where id = p_id;
+end $$;
+
 create or replace function public.owner_set_meta(p_pass text, p_key text, p_value jsonb)
 returns void language plpgsql security definer set search_path = ''
 as $$

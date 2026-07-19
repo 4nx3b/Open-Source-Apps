@@ -380,6 +380,28 @@
   </div>
 </div>
 
+<!-- ============ TAG EDITOR POPUP (owner) ============ -->
+<div class="modal-overlay" id="tags-overlay">
+  <div class="modal tags-modal" role="dialog" aria-modal="true" aria-label="Edit tags">
+    <button class="modal-close" id="tags-close" data-cursor="pointer" aria-label="Close">✕</button>
+    <span class="modal-eyebrow">Owner area</span>
+    <h3>Tags for <span id="tags-app-name">App</span></h3>
+    <p>Add, edit or remove the tags shown on this app's card. Press Enter or comma to add.</p>
+    <div class="tags-chips" id="tags-chips"></div>
+    <form class="tags-form" id="tags-form" autocomplete="off">
+      <div class="field-row">
+        <input type="text" id="tags-input" placeholder="e.g. android, music, offline" autocomplete="off" maxlength="24">
+        <button type="button" class="btn btn-outline" id="tags-add" data-cursor="pointer">Add</button>
+      </div>
+      <p class="login-error" id="tags-error"></p>
+      <div class="upload-actions">
+        <button type="button" class="btn btn-outline" id="tags-cancel" data-cursor="pointer">Cancel</button>
+        <button type="submit" class="btn btn-primary" data-cursor="pointer">Save tags</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <!-- ============ TOASTS ============ -->
 <div class="toast-stack" id="toast-stack"></div>
 
