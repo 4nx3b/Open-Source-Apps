@@ -164,6 +164,30 @@
     });
   }
 
+  /* ---------------- CONFIRM DIALOG (replaces window.confirm) ---------------- */
+  const confirmOverlay = $('#confirm-overlay');
+  let confirmResolve = null;
+  function askConfirm(msg, okLabel){
+    if(!confirmOverlay) return Promise.resolve(window.confirm(msg));
+    $('#confirm-msg').textContent = msg;
+    $('#confirm-ok').textContent = okLabel || 'Delete';
+    confirmOverlay.classList.add('open');
+    return new Promise(resolve => { confirmResolve = resolve; });
+  }
+  function settleConfirm(val){
+    if(!confirmOverlay) return;
+    confirmOverlay.classList.remove('open');
+    if(confirmResolve){ confirmResolve(val); confirmResolve = null; }
+  }
+  if(confirmOverlay){
+    $('#confirm-cancel').addEventListener('click', () => settleConfirm(false));
+    $('#confirm-ok').addEventListener('click', () => settleConfirm(true));
+    confirmOverlay.addEventListener('click', e => { if(e.target === confirmOverlay) settleConfirm(false); });
+    document.addEventListener('keydown', e => {
+      if(e.key === 'Escape' && confirmOverlay.classList.contains('open')) settleConfirm(false);
+    });
+  }
+
   /* ---------------- DELETE CATEGORY (owner only) ---------------- */
   async function deleteCategory(cat){
     if(!isAdmin) return;
@@ -171,7 +195,7 @@
     const msg = n
       ? `Delete the "${cat}" category and the ${n} app${n === 1 ? '' : 's'} inside it? This cannot be undone.`
       : `Delete the empty "${cat}" category?`;
-    if(!window.confirm(msg)) return;
+    if(!(await askConfirm(msg, 'Delete category'))) return;
 
     if(!HIDDEN_CATS.includes(cat)) HIDDEN_CATS.push(cat);
     if(CUSTOM_GLYPHS[cat]) delete CUSTOM_GLYPHS[cat];
@@ -361,8 +385,9 @@
       if(del) del.addEventListener('click', e => {
         e.stopPropagation();
         const name = card.dataset.name;
-        if(name && window.confirm('Delete "' + name + '"? This cannot be undone.')){
-          deleteApp(card.dataset.cat, name);
+        if(name){
+          askConfirm('Delete “' + name + '”? This cannot be undone.', 'Delete app')
+            .then(ok => { if(ok) deleteApp(card.dataset.cat, name); });
         }
       });
       const menuBtn = card.querySelector('.cat-menu-btn');
@@ -1177,7 +1202,7 @@
     try { done = localStorage.getItem('openhouse-migrated') === '1'; } catch(e){}
     if(done) return;
     const n = LOCAL_UPLOADS.length;
-    if(!window.confirm(n + ' app' + (n === 1 ? '' : 's') + ' from this browser haven\'t been published to the shared database yet. Publish them now so everyone can see them?')) return;
+    if(!(await askConfirm(n + ' app' + (n === 1 ? '' : 's') + ' from this browser haven\'t been published to the shared database yet. Publish them now so everyone can see them?', 'Publish'))) return;
     let ok = 0, fail = 0;
     for(const a of LOCAL_UPLOADS){
       try {
