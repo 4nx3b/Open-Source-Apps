@@ -122,15 +122,13 @@
   }
 
   /* ---------------- STATE ---------------- */
-  const PAGE_SIZE = 3; // 3 apps per page; new apps flow onto the next page
-  const cur = { cat:null, page:1 };
+  const cur = { cat:null };
 
   /* ---------------- DIRECTORY ELEMENTS ---------------- */
   const grid     = $('#cat-grid');
   const overlay  = $('#cat-overlay');
   const titleEl  = $('#cat-title');
   const metaEl   = $('#cat-meta');
-  const pagesEl  = $('#cat-pages');
   const listEl   = $('#cat-list');
   const closeBtn = $('#cat-close');
 
@@ -271,7 +269,6 @@
   function openCat(cat){
     closeMenu();
     cur.cat = cat;
-    cur.page = 1;
     titleEl.textContent = cat;
     render();
     overlay.classList.add('open');
@@ -292,31 +289,12 @@
 
   function render(){
     const apps = sortedApps();
-    const total = Math.max(1, Math.ceil(apps.length / PAGE_SIZE));
-    cur.page = Math.min(Math.max(cur.page, 1), total);
-
     metaEl.textContent = apps.length + (apps.length === 1 ? ' app' : ' apps');
-
-    // Pages pill — sliding window of at most 3 page numbers around the
-    // current page; older numbers drop off as the user advances.
-    const WINDOW = 3;
-    let winStart = Math.max(1, cur.page - 1);
-    let winEnd = Math.min(total, winStart + WINDOW - 1);
-    winStart = Math.max(1, winEnd - WINDOW + 1); // re-anchor near the end
-    let pg = `<button class="pg prev" data-pg="prev" ${cur.page === 1 ? 'disabled' : ''} aria-label="Previous page">‹</button>`;
-    for(let p = winStart; p <= winEnd; p++){
-      pg += `<button class="pg ${p === cur.page ? 'active' : ''}" data-pg="${p}" aria-label="Page ${p}">${p}</button>`;
-    }
-    pg += `<button class="pg next" data-pg="next" ${cur.page === total ? 'disabled' : ''} aria-label="Next page">›</button>`;
-    pagesEl.innerHTML = pg;
-
-
-    // List
-    const start = (cur.page - 1) * PAGE_SIZE;
-    const slice = apps.slice(start, start + PAGE_SIZE);
-    listEl.innerHTML = slice.length
-      ? slice.map((a, i) => cardHTML(a, i)).join('')
+    // All apps in one scrollable list (popup size is capped by CSS).
+    listEl.innerHTML = apps.length
+      ? apps.map((a, i) => cardHTML(a, i)).join('')
       : `<p class="cat-empty">No apps in this category yet.</p>`;
+    listEl.scrollTop = 0;
     bindCards();
   }
 
@@ -328,7 +306,7 @@
     const delBtn = isAdmin ? `<button class="cat-del" data-cursor="pointer" aria-label="Delete app" title="Delete app"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>` : '';
     const menuBtn = isAdmin ? `<button class="cat-menu-btn" data-cursor="pointer" aria-label="App actions" aria-haspopup="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg></button>` : '';
     const starBadge = (a.starred && cur.cat !== 'Featured') ? `<span class="cat-star-badge" title="Featured" aria-label="Featured">★</span>` : '';
-    return `<article class="cat-app tilt-card" data-cursor="pointer" data-repo="${esc(a.repo || '')}" data-name="${esc(a.name)}" data-cat="${esc(a.cat)}" style="animation-delay:${(i*0.05).toFixed(2)}s">
+    return `<article class="cat-app tilt-card" data-cursor="pointer" data-repo="${esc(a.repo || '')}" data-name="${esc(a.name)}" data-cat="${esc(a.cat)}" style="animation-delay:${Math.min(i*0.05, 0.3).toFixed(2)}s">
       <div class="card-glow"></div>
       ${delBtn}${menuBtn}${starBadge}
       ${media}
@@ -550,18 +528,6 @@
       closeTagEditor();
     });
   }
-
-  /* ---------------- PAGINATION + SORT ---------------- */
-  pagesEl.addEventListener('click', e => {
-    const btn = e.target.closest('.pg');
-    if(!btn || btn.disabled) return;
-    const total = Math.max(1, Math.ceil(((BY_CAT[cur.cat] || []).length) / PAGE_SIZE));
-    const v = btn.dataset.pg;
-    if(v === 'prev')      cur.page = Math.max(1, cur.page - 1);
-    else if(v === 'next') cur.page = Math.min(total, cur.page + 1);
-    else                  cur.page = parseInt(v, 10);
-    render();
-  });
 
   /* ---------------- OWNER AUTH ---------------- */
   // NOTE: This is a client-side gate. The password hash lives in the
