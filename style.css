@@ -359,7 +359,7 @@ kbd{
   align-items:start; align-content:start; gap:8px; flex:1; min-height:0;
 }
 .cat-app-list::-webkit-scrollbar{ display:none; width:0; }
-.cat-app{ position:relative; overflow:visible; height:auto; padding:13px 12px; border-radius:var(--radius-md); background:var(--panel); border:1px solid var(--panel-border); display:flex; gap:11px; transform-style:preserve-3d; transition:transform .1s ease, border-color .3s ease; }
+.cat-app{ position:relative; overflow:visible; height:auto; padding:13px 12px; border-radius:var(--radius-md); background:var(--panel); border:1px solid var(--panel-border); display:flex; gap:11px; transition:transform .1s ease, border-color .3s ease; }
 .cat-app:hover{ border-color:var(--accent); }
 .cat-app:hover .card-glow{ opacity:1; }
 .cat-app .app-icon{ width:40px;height:40px;flex-shrink:0; font-size:17px; margin-bottom:0; }
@@ -1018,6 +1018,9 @@ a{ transition:color .25s ease; }
   transition:opacity .18s var(--ease), transform .18s var(--ease), visibility .18s;
 }
 .cat-menu.open{ opacity:1; visibility:visible; transform:translateY(0) scale(1); }
+/* opens upward when there's no room below (class set in JS) */
+.cat-menu.up{ top:auto; bottom:calc(100% + 6px); transform:translateY(6px) scale(.97); transform-origin:bottom right; }
+.cat-menu.up.open{ transform:translateY(0) scale(1); }
 .cat-menu-item{
   padding:9px 12px; border-radius:8px; font-size:13px; font-weight:600;
   color:var(--text-dim); text-align:left; width:100%;
@@ -1040,7 +1043,7 @@ a{ transition:color .25s ease; }
    the whole page on a fixed layer with a slow drift.
    ============================================================ */
 body::before{
-  content:''; position:fixed; inset:-60px; z-index:0; pointer-events:none;
+  content:''; position:fixed; inset:-60px -880px -880px -60px; z-index:0; pointer-events:none;
   opacity:.4;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='900' viewBox='0 0 900 900' fill='none' stroke='%23ffffff' stroke-opacity='0.05' stroke-width='1.5'%3E%3Crect x='40' y='120' width='300' height='90'/%3E%3Crect x='560' y='60' width='260' height='140'/%3E%3Crect x='120' y='680' width='340' height='110' transform='rotate(-4 290 735)'/%3E%3Crect x='620' y='560' width='240' height='200'/%3E%3Cpath d='M0 420 L340 400 L360 470 L20 490 Z'/%3E%3Cpath d='M700 300 L900 280 M640 840 L880 800'/%3E%3Cpath d='M80 40 L80 260 M840 420 L840 700'/%3E%3Cpath d='M400 880 L760 860 L770 900'/%3E%3C/svg%3E");
   background-size:820px 820px;
@@ -1052,9 +1055,9 @@ body::before{
   from{ transform:translate3d(0,0,0); }
   to{ transform:translate3d(-820px,-820px,0); }
 }
-/* page content stays above the wireframe layer */
-main, .topbar, .footer, .dock{ position:relative; z-index:1; }
-.topbar{ z-index:60; } .dock{ z-index:90; }
+/* page content stays above the wireframe layer.
+   NOTE: topbar + dock are position:fixed — never override that here. */
+main, .footer{ position:relative; z-index:1; }
 
 @media (prefers-reduced-motion: reduce){
   body::before{ animation:none; }
