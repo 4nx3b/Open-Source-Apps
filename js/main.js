@@ -420,15 +420,21 @@
   function closeModal(overlay){ overlay.classList.remove('open'); }
 
   const welcomeOverlay = $('#welcome-overlay');
-  $('#welcome-close') && $('#welcome-close').addEventListener('click', () => closeModal(welcomeOverlay));
-  $('#welcome-dismiss') && $('#welcome-dismiss').addEventListener('click', () => {
+  // Any way of dismissing the welcome counts as "seen", and it's remembered
+  // permanently (localStorage) — shown once per device, ever.
+  function dismissWelcome(){
     closeModal(welcomeOverlay);
-    try{ sessionStorage.setItem('openhouse-welcomed', '1'); }catch(e){}
-  });
-  welcomeOverlay && welcomeOverlay.addEventListener('click', e => { if(e.target === welcomeOverlay) closeModal(welcomeOverlay); });
+    try{ localStorage.setItem('openhouse-welcomed', '1'); }catch(e){}
+  }
+  $('#welcome-close') && $('#welcome-close').addEventListener('click', dismissWelcome);
+  $('#welcome-dismiss') && $('#welcome-dismiss').addEventListener('click', dismissWelcome);
+  welcomeOverlay && welcomeOverlay.addEventListener('click', e => { if(e.target === welcomeOverlay) dismissWelcome(); });
   function maybeShowWelcome(){
     let seen = false;
-    try{ seen = sessionStorage.getItem('openhouse-welcomed') === '1'; }catch(e){}
+    try{
+      seen = localStorage.getItem('openhouse-welcomed') === '1'
+          || sessionStorage.getItem('openhouse-welcomed') === '1'; // legacy flag
+    }catch(e){}
     if(!seen) openModal(welcomeOverlay);
   }
 
@@ -472,7 +478,7 @@
     }
     if(e.key === 'Escape'){
       closePalette();
-      closeModal(welcomeOverlay);
+      if(welcomeOverlay && welcomeOverlay.classList.contains('open')) dismissWelcome();
       closeModal(shortcutsOverlay);
       changelogOverlay && closeModal(changelogOverlay);
       return;
