@@ -412,22 +412,30 @@ body.modal-open{ pointer-events:none; overflow:hidden; }
 .login-form{ display:flex; flex-direction:column; gap:12px; margin-top:18px; }
 .login-form input{ width:100%; padding:13px 16px; border-radius:12px; background:rgba(255,255,255,.05); border:1px solid var(--panel-border); color:var(--text); font-family:var(--font-display); font-size:14.5px; outline:none; }
 .login-form input:focus{ border-color:var(--accent); }
-.login-error{ color:#ff7a7a; font-size:13px; margin-top:10px; min-height:1em; }
+.login-error{ color:#ff7a7a; font-size:13px; margin:0; min-height:0; }
+.login-error:empty{ display:none; }
 
-.upload-modal{ width:min(560px,100%); max-height:90vh; overflow-y:auto; }
-.upload-form{ display:flex; flex-direction:column; gap:16px; margin-top:18px; }
-.field{ display:flex; flex-direction:column; gap:7px; }
+.upload-modal{
+  width:min(560px,100%); max-height:88vh; overflow-y:auto;
+  padding:26px 24px;
+  scrollbar-width:none; -ms-overflow-style:none;
+  -webkit-overflow-scrolling:touch; overscroll-behavior:contain;
+}
+.upload-modal::-webkit-scrollbar{ display:none; width:0; }
+.upload-modal h3{ margin:0 36px 4px 0; font-size:20px; }
+.upload-form{ display:flex; flex-direction:column; gap:11px; margin-top:12px; }
+.field{ display:flex; flex-direction:column; gap:5px; }
 .field > span{ font-size:13px; color:var(--text-dim); font-weight:600; }
 .field > span em{ color:var(--text-faint); font-style:normal; font-weight:400; }
-.field input, .field select, .field textarea{ width:100%; padding:12px 14px; border-radius:12px; background:rgba(255,255,255,.05); border:1px solid var(--panel-border); color:var(--text); font-family:var(--font-display); font-size:14.5px; outline:none; resize:vertical; }
+.field input, .field select, .field textarea{ width:100%; padding:10px 13px; border-radius:12px; background:rgba(255,255,255,.05); border:1px solid var(--panel-border); color:var(--text); font-family:var(--font-display); font-size:14.5px; outline:none; resize:vertical; }
 .field input:focus, .field select:focus, .field textarea:focus{ border-color:var(--accent); }
 .field select{ cursor:pointer; }
 .field-row{ display:flex; gap:10px; align-items:center; }
 .field-row input{ flex:1; }
 .field-hint{ font-family:var(--font-mono); font-size:11px; color:var(--text-faint); }
 .thumb-preview{ width:64px; height:64px; border-radius:12px; object-fit:cover; margin-top:8px; border:1px solid var(--panel-border); }
-.upload-actions{ display:flex; gap:12px; justify-content:flex-end; margin-top:6px; }
-.upload-sub{ color:var(--text-dim); font-size:14px; margin-top:4px; }
+.upload-actions{ display:flex; gap:10px; justify-content:flex-end; margin-top:2px; }
+.upload-sub{ color:var(--text-dim); font-size:13px; margin:0 0 2px; }
 .cat-thumb{ width:40px; height:40px; border-radius:10px; object-fit:cover; flex-shrink:0; }
 
 /* ================= TOP-BAR OVERFLOW MENU ================= */
@@ -1121,3 +1129,74 @@ body{
   -webkit-touch-callout:none;
 }
 input, textarea{ -webkit-user-select:text; user-select:text; }
+
+/* ============================================================
+   POLISH ROUND 7
+   ============================================================ */
+
+/* file input: styled as a dashed drop-zone with hover/active feedback */
+.field input[type="file"]{
+  border-style:dashed; cursor:pointer;
+  transition:border-color .25s ease, background .25s ease;
+}
+.field input[type="file"]:hover,
+.field input[type="file"]:active{ border-color:var(--accent); background:var(--accent-soft); }
+.field input[type="file"]::file-selector-button{
+  border:none; border-radius:100px; padding:7px 14px; margin-right:12px;
+  background:var(--accent); color:#0a0a0a; font-weight:600; font-family:inherit;
+  font-size:12.5px; cursor:pointer; transition:box-shadow .25s ease, transform .2s var(--ease);
+}
+.field input[type="file"]::file-selector-button:hover{ box-shadow:0 0 16px var(--accent-glow); }
+.field input[type="file"]:active::file-selector-button{ transform:scale(.96); }
+
+/* select: custom chevron + accent on focus */
+.field select{
+  appearance:none; -webkit-appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M6 9l6 6 6-6' stroke='%239a9aa1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat; background-position:right 14px center;
+  padding-right:38px;
+}
+
+/* thumbnail preview pops in */
+.thumb-preview{ animation:thumbPop .4s var(--ease) both; }
+@keyframes thumbPop{ from{ opacity:0; transform:scale(.7) rotate(-4deg); } to{ opacity:1; transform:scale(1) rotate(0); } }
+
+/* modal close button: subtle attention on modal open */
+.modal-overlay.open .modal-close{ animation:closeIn .5s var(--ease) .25s both; }
+@keyframes closeIn{ from{ opacity:0; transform:rotate(-90deg) scale(.6); } to{ opacity:1; transform:rotate(0) scale(1); } }
+
+/* toolbar buttons ripple-ish press */
+.pages-pill .pg:active{ transform:scale(.85); }
+
+/* category pill icons: orbit glow on grid hover-in (desktop) */
+@media (hover:hover){
+  .cat-pill .cat-ico{ transition:box-shadow .3s ease, background .3s ease; }
+  .cat-pill:hover .cat-ico{ box-shadow:0 0 16px rgba(255,180,84,.35); }
+}
+
+/* hero eyebrow: letters fade in */
+body.loaded .hero .eyebrow{ animation:rowIn .8s var(--ease) .3s both; }
+
+/* buttons: soft glow breathing on the primary CTA (hero only) */
+.hero .btn-primary{ animation:ctaBreathe 4.5s ease-in-out 2s infinite; }
+@keyframes ctaBreathe{ 0%,100%{ box-shadow:0 0 0 rgba(255,180,84,0); } 50%{ box-shadow:0 0 26px rgba(255,180,84,.25); } }
+
+/* dropdown menus: slight overshoot */
+.admin-menu.open, .cat-menu.open{ transition-timing-function:cubic-bezier(.22,1.4,.36,1); }
+
+/* toast: icon dot ping on entry */
+.toast.show .dot{ animation:ping 1.2s ease-out 1, blink 1.6s ease-in-out 1.2s infinite; }
+
+/* story lines: subtle tracking-in while typing */
+.story-line.tw-typing-line{ letter-spacing:.01em; }
+
+/* footer columns cascade up on reveal */
+.footer-inner > *{ opacity:0; transform:translateY(16px); transition:opacity .7s var(--ease), transform .7s var(--ease); }
+.footer.in-view .footer-inner > *{ opacity:1; transform:none; }
+.footer.in-view .footer-inner > *:nth-child(2){ transition-delay:.1s; }
+.footer.in-view .footer-inner > *:nth-child(3){ transition-delay:.2s; }
+
+@media (prefers-reduced-motion: reduce){
+  .hero .btn-primary{ animation:none; }
+  .footer-inner > *{ opacity:1; transform:none; }
+}
