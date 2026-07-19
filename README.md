@@ -65,6 +65,9 @@ Without this, apps you upload are only saved in your own browser
 ### 2. Run this in the SQL Editor (paste all of it, press Run)
 
 ```sql
+-- private schema for the owner password (must exist before the tables)
+create schema if not exists private;
+
 -- apps table
 create table public.apps (
   id          bigint generated always as identity primary key,
@@ -87,8 +90,6 @@ create table public.site_meta (
 
 -- owner password lives ONLY in the database (change it here!)
 create table private.secrets (key text primary key, value text);
--- if the "private" schema doesn't exist yet:
---   create schema private;
 insert into private.secrets values ('owner_pass', 'CHANGE_ME_TO_YOUR_PASSWORD');
 
 alter table public.apps enable row level security;
@@ -145,8 +146,9 @@ begin
 end $$;
 ```
 
-> If you get an error that schema `private` does not exist, run
-> `create schema private;` first, then re-run the block above.
+> Already ran the script halfway and got errors? Reset with
+> `drop table if exists public.apps, public.site_meta; drop schema if exists private cascade;`
+> then run the full block again.
 
 **Set your owner password** in the `insert into private.secrets` line —
 that becomes the password you use to sign in on the site. It is checked by
