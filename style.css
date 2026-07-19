@@ -896,9 +896,11 @@ a{ transition:color .25s ease; }
 
 /* small badge visitors see on featured apps */
 .cat-star-badge{
-  position:absolute; top:13px; right:76px; z-index:2;
+  position:absolute; top:13px; right:12px; z-index:2;
   font-size:13px; color:var(--accent); text-shadow:0 0 10px var(--accent-glow);
 }
+/* owner signed in → delete + menu buttons occupy the corner, shift left */
+.cat-del ~ .cat-star-badge{ right:76px; }
 
 
 /* ============================================================
@@ -915,7 +917,7 @@ a{ transition:color .25s ease; }
 /* cheaper text rendering for long mono blocks */
 .typewrite,.story-line{ text-rendering:optimizeSpeed; }
 
-/* ================= INFO POPUPS (guidelines + changelog) ================= */
+/* ================= INFO POPUP (changelog) ================= */
 .info-modal{ width:min(520px,100%); max-height:82vh; display:flex; flex-direction:column; }
 .info-scroll{
   overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain;
@@ -934,12 +936,6 @@ a{ transition:color .25s ease; }
 }
 .info-list li strong{ color:var(--text); font-weight:600; }
 .info-list li em{ color:var(--accent); font-style:normal; }
-.info-note{
-  margin-top:18px; padding:12px 14px; border-radius:12px;
-  background:var(--accent-soft); border:1px solid rgba(255,180,84,.25);
-  font-size:13px; color:var(--text-dim); line-height:1.55;
-}
-.info-note em{ color:var(--accent); font-style:normal; font-weight:600; }
 .log-entry{ margin-bottom:22px; }
 .log-entry:last-child{ margin-bottom:4px; }
 .log-date{
@@ -1111,9 +1107,8 @@ body.loaded .dock a:nth-child(4){ animation-delay:.79s; }
 .cat-menu.open .cat-menu-item:nth-child(2){ animation-delay:.07s; }
 .cat-menu.open .cat-menu-item:nth-child(3){ animation-delay:.11s; }
 
-/* thumbnails shimmer once while loading */
-.cat-thumb{ background:linear-gradient(110deg, rgba(255,255,255,.04) 30%, rgba(255,255,255,.1) 50%, rgba(255,255,255,.04) 70%); background-size:200% 100%; animation:thumbShimmer 1.4s ease infinite; }
-@keyframes thumbShimmer{ from{ background-position:120% 0; } to{ background-position:-120% 0; } }
+/* thumbnail loading placeholder tint */
+.cat-thumb{ background:rgba(255,255,255,.05); }
 
 /* upload/login inputs: caret in accent color */
 input, textarea{ caret-color:var(--accent); }
@@ -1255,12 +1250,13 @@ body.loaded .hero .eyebrow{ animation:rowIn .8s var(--ease) .3s both; }
   position:relative; overflow:hidden;
 }
 .cat-pill-featured::before{
-  content:''; position:absolute; inset:0; pointer-events:none;
-  background:linear-gradient(105deg, transparent 30%, rgba(255,215,160,.12) 50%, transparent 70%);
-  background-size:220% 100%;
-  animation:featSheen 5s linear infinite;
+  content:''; position:absolute; top:0; bottom:0; left:-60%; width:60%;
+  pointer-events:none;
+  background:linear-gradient(105deg, transparent, rgba(255,215,160,.14) 50%, transparent);
+  animation:featSheen 4.5s linear infinite;
+  will-change:transform;
 }
-@keyframes featSheen{ from{ background-position:130% 0; } to{ background-position:-130% 0; } }
+@keyframes featSheen{ from{ transform:translateX(0); } to{ transform:translateX(320%); } }
 .cat-pill-featured .cat-ico{
   width:38px; height:38px; font-size:17px;
   background:rgba(255,180,84,.18); box-shadow:0 0 18px rgba(255,180,84,.25);
@@ -1275,3 +1271,44 @@ body.loaded .hero .eyebrow{ animation:rowIn .8s var(--ease) .3s both; }
 .cat-pill-featured:hover{ border-color:var(--accent); box-shadow:0 14px 40px -16px rgba(255,180,84,.35); }
 @media (hover:none){ .cat-pill-featured:hover{ border-color:rgba(255,180,84,.4); } }
 @media (prefers-reduced-motion: reduce){ .cat-pill-featured::before{ animation:none; } }
+
+
+/* ============================================================
+   POLISH ROUND 8
+   ============================================================ */
+
+/* featured pill: icon slowly pulses */
+.cat-pill-featured .cat-ico{ animation:featIcoPulse 3.6s ease-in-out infinite; }
+@keyframes featIcoPulse{ 0%,100%{ box-shadow:0 0 12px rgba(255,180,84,.2); } 50%{ box-shadow:0 0 26px rgba(255,180,84,.45); } }
+
+/* star badge twinkles gently */
+.cat-star-badge{ animation:starTwinkle 2.8s ease-in-out infinite; }
+@keyframes starTwinkle{ 0%,100%{ opacity:1; transform:scale(1); } 50%{ opacity:.65; transform:scale(.88); } }
+
+/* category popup cards: icon settles with a tiny bounce on entry */
+.cat-app .app-icon, .cat-app .cat-thumb{ animation:iconSettle .5s var(--ease) both; }
+@keyframes iconSettle{ 0%{ opacity:0; transform:scale(.6); } 70%{ transform:scale(1.06); } 100%{ opacity:1; transform:scale(1); } }
+
+/* pagination: page content crossfade when switching */
+@keyframes pageFade{ from{ opacity:0; transform:translateY(6px); } to{ opacity:1; transform:none; } }
+.cat-app-list{ animation:pageFade .3s var(--ease); }
+
+/* upload form focus: label brightens with its field */
+.field:focus-within > span{ color:var(--accent); transition:color .25s ease; }
+.field > span{ transition:color .25s ease; }
+
+/* topbar search pill: kbd hint glows on hover (desktop) */
+@media (hover:hover){
+  .palette-trigger:hover kbd{ border-color:var(--accent); color:var(--accent); transition:border-color .25s ease, color .25s ease; }
+}
+
+/* changelog month chips pulse once when opened */
+.modal-overlay.open .log-date{ animation:rowIn .4s var(--ease) both; }
+
+/* select menu items: hover slide */
+.select-item{ transition:background .15s, color .15s, transform .15s var(--ease); }
+.select-item:hover{ transform:translateX(3px); }
+
+@media (prefers-reduced-motion: reduce){
+  .cat-pill-featured .cat-ico, .cat-star-badge, .cat-app .app-icon, .cat-app .cat-thumb{ animation:none; }
+}
