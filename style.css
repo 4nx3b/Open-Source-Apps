@@ -901,7 +901,6 @@ a{ transition:color .25s ease; }
 @media (prefers-reduced-motion: reduce){
   .story-img{ transition:none; transform:none; }
 }
-}
 
 /* ================= STAR / FEATURED ================= */
 .cat-star{
