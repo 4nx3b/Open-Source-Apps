@@ -380,8 +380,7 @@
   }
 
   $('#submit-btn') && $('#submit-btn').addEventListener('click', () => {
-    const msg = 'I want to add this app and this is the repo';
-    window.open('https://t.me/therealreze?text=' + encodeURIComponent(msg), '_blank', 'noopener');
+    window.open('https://t.me/therealreze', '_blank', 'noopener');
     showToast('Opening Telegram…');
   });
 

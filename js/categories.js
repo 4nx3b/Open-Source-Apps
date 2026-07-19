@@ -28,8 +28,9 @@
   }
 
   /* ---------------- DATA ---------------- */
-  let ORDER = ['Featured','Media','Productivity','Finance','Dev Tools','Notes',
-               'Utilities','Communication','Design','Security','Health','Tools'];
+  const DEFAULT_ORDER = ['Featured','Media','Productivity','Finance','Dev Tools','Notes',
+                         'Utilities','Communication','Design','Security','Health','Tools'];
+  let ORDER = DEFAULT_ORDER.slice();
 
   const GLYPH = {
     'Featured':'✦', 'Media':'♪', 'Productivity':'✓', 'Finance':'$', 'Dev Tools':'◧',
@@ -52,28 +53,64 @@
 
   // Categories start empty — owners populate them through the upload flow.
   // Categories the owner deleted earlier stay hidden until recreated.
-  ORDER = ORDER.filter(c => !HIDDEN_CATS.includes(c));
-  const APPS = [];
   const BY_CAT = {};
-  ORDER.forEach(c => BY_CAT[c] = []);
-
-  function unhideCat(cat){
-    const i = HIDDEN_CATS.indexOf(cat);
-    if(i > -1){ HIDDEN_CATS.splice(i, 1); saveJSON(LS_HIDDEN, HIDDEN_CATS); }
-  }
-
-  /* ---------------- PERSISTENCE (owner uploads) ---------------- */
-  const LS_KEY = 'openhouse-uploads';
-  let UPLOADS = loadUploads();
-  function loadUploads(){ try { return JSON.parse(localStorage.getItem(LS_KEY)) || []; } catch(e){ return []; } }
-  function saveUploads(){ try { localStorage.setItem(LS_KEY, JSON.stringify(UPLOADS)); } catch(e){} }
-  function mergeUploads(){
+  function rebuildData(){
+    ORDER = DEFAULT_ORDER.filter(c => !HIDDEN_CATS.includes(c));
+    Object.keys(BY_CAT).forEach(k => delete BY_CAT[k]);
+    ORDER.forEach(c => BY_CAT[c] = []);
     UPLOADS.forEach(a => {
-      unhideCat(a.cat); // an app in a category means it exists again
       BY_CAT[a.cat] = BY_CAT[a.cat] || [];
       if(!ORDER.includes(a.cat)) ORDER.push(a.cat);
       BY_CAT[a.cat].push(a);
     });
+  }
+  rebuildData();
+
+  function unhideCat(cat){
+    const i = HIDDEN_CATS.indexOf(cat);
+    if(i > -1){
+      HIDDEN_CATS.splice(i, 1);
+      if(DB.ready){ DB.setMeta(ownerPass, 'hidden_cats', HIDDEN_CATS).catch(()=>{}); }
+      else saveJSON(LS_HIDDEN, HIDDEN_CATS);
+    }
+  }
+
+  /* ---------------- PERSISTENCE ---------------- */
+  // Primary store: Supabase (shared — every visitor sees the same apps).
+  // Fallback: localStorage (only until config.js is filled in).
+  const DB = window.OpenhouseDB || { ready:false };
+  const LS_KEY = 'openhouse-uploads';
+  let LOCAL_UPLOADS = loadUploads();               // legacy local-only apps
+  let UPLOADS = DB.ready ? [] : LOCAL_UPLOADS;     // live list shown on the site
+  function loadUploads(){ try { return JSON.parse(localStorage.getItem(LS_KEY)) || []; } catch(e){ return []; } }
+  function saveUploads(){ if(DB.ready) return; try { localStorage.setItem(LS_KEY, JSON.stringify(UPLOADS)); } catch(e){} }
+
+  // Owner password is kept for the session so DB writes can be authorised
+  // server-side (Supabase re-checks it on every write).
+  let ownerPass = '';
+  try { ownerPass = sessionStorage.getItem('openhouse-pass') || ''; } catch(e){}
+  /* ---------------- LOAD FROM DATABASE ---------------- */
+  async function loadFromDB(){
+    if(!DB.ready) return;
+    try {
+      const [apps, meta] = await Promise.all([DB.fetchApps(), DB.fetchMeta()]);
+      UPLOADS = apps.map(r => ({
+        id: r.id, name: r.name, cat: r.cat, icon: r.icon,
+        desc: r.description, tags: r.tags || [r.cat], license: r.license,
+        added: (r.created_at || '').slice(0, 10), repo: r.repo, thumb: r.thumb || ''
+      }));
+      (meta || []).forEach(m => {
+        if(m.key === 'hidden_cats' && Array.isArray(m.value)) HIDDEN_CATS = m.value;
+        if(m.key === 'cat_icons' && m.value && typeof m.value === 'object') CUSTOM_GLYPHS = m.value;
+      });
+      rebuildData();
+      renderGrid();
+      buildPaletteApps();
+      updateStats();
+      if(overlay.classList.contains('open')) render();
+    } catch(e){
+      toast('Could not load apps from the database.');
+    }
   }
 
   /* ---------------- STATE ---------------- */
@@ -121,7 +158,7 @@
   }
 
   /* ---------------- DELETE CATEGORY (owner only) ---------------- */
-  function deleteCategory(cat){
+  async function deleteCategory(cat){
     if(!isAdmin) return;
     const n = (BY_CAT[cat] || []).length;
     const msg = n
@@ -129,13 +166,24 @@
       : `Delete the empty "${cat}" category?`;
     if(!window.confirm(msg)) return;
 
+    if(!HIDDEN_CATS.includes(cat)) HIDDEN_CATS.push(cat);
+    if(CUSTOM_GLYPHS[cat]) delete CUSTOM_GLYPHS[cat];
+
+    if(DB.ready){
+      try {
+        await DB.deleteCategory(ownerPass, cat);
+        await DB.setMeta(ownerPass, 'hidden_cats', HIDDEN_CATS);
+        await DB.setMeta(ownerPass, 'cat_icons', CUSTOM_GLYPHS);
+      } catch(e){ toast(e.message || 'Delete failed.'); return; }
+    } else {
+      saveJSON(LS_HIDDEN, HIDDEN_CATS);
+      saveJSON(LS_ICONS, CUSTOM_GLYPHS);
+    }
+
     UPLOADS = UPLOADS.filter(a => a.cat !== cat);
     saveUploads();
     delete BY_CAT[cat];
     ORDER = ORDER.filter(c => c !== cat);
-    if(!HIDDEN_CATS.includes(cat)) HIDDEN_CATS.push(cat);
-    saveJSON(LS_HIDDEN, HIDDEN_CATS);
-    if(CUSTOM_GLYPHS[cat]){ delete CUSTOM_GLYPHS[cat]; saveJSON(LS_ICONS, CUSTOM_GLYPHS); }
 
     if(cur.cat === cat) closeCat();
     renderGrid();
@@ -183,22 +231,27 @@
     });
     $('#icon-close').addEventListener('click', closeIconEditor);
     iconOverlay.addEventListener('click', e => { if(e.target === iconOverlay) closeIconEditor(); });
-    $('#icon-reset').addEventListener('click', () => {
+    function persistIcons(){
+      if(DB.ready) return DB.setMeta(ownerPass, 'cat_icons', CUSTOM_GLYPHS);
+      saveJSON(LS_ICONS, CUSTOM_GLYPHS);
+      return Promise.resolve();
+    }
+    $('#icon-reset').addEventListener('click', async () => {
       if(!iconCat) return;
       delete CUSTOM_GLYPHS[iconCat];
-      saveJSON(LS_ICONS, CUSTOM_GLYPHS);
+      try { await persistIcons(); } catch(e){ toast(e.message || 'Save failed.'); return; }
       renderGrid();
       toast('Icon reset to default.');
       closeIconEditor();
     });
-    $('#icon-form').addEventListener('submit', e => {
+    $('#icon-form').addEventListener('submit', async e => {
       e.preventDefault();
       if(!iconCat) return;
       const v = firstGrapheme($('#icon-input').value);
       if(!v){ $('#icon-error').textContent = 'Type or paste an emoji first.'; return; }
       $('#icon-error').textContent = '';
       CUSTOM_GLYPHS[iconCat] = v;
-      saveJSON(LS_ICONS, CUSTOM_GLYPHS);
+      try { await persistIcons(); } catch(err){ $('#icon-error').textContent = err.message || 'Save failed.'; return; }
       renderGrid();
       toast('Icon updated for "' + iconCat + '".');
       closeIconEditor();
@@ -373,24 +426,47 @@
   $('#admin-signout-item').addEventListener('click', () => {
     closeMenu();
     isAdmin = false;
-    try { sessionStorage.removeItem('openhouse-admin'); } catch(e){}
+    ownerPass = '';
+    try {
+      sessionStorage.removeItem('openhouse-admin');
+      sessionStorage.removeItem('openhouse-pass');
+    } catch(e){}
     refreshAdminUI();
     toast('Signed out.');
   });
 
   $('#login-close').addEventListener('click', closeLogin);
   $('#login-overlay').addEventListener('click', e => { if(e.target === $('#login-overlay')) closeLogin(); });
-  $('#login-form').addEventListener('submit', e => {
+  $('#login-form').addEventListener('submit', async e => {
     e.preventDefault();
-    if(hashStr($('#login-pass').value) === ADMIN_HASH){
-      isAdmin = true;
-      try { sessionStorage.setItem('openhouse-admin', '1'); } catch(e){}
-      refreshAdminUI();
-      closeLogin();
-      toast('Signed in — you can now upload apps.');
-    } else {
+    const pass = $('#login-pass').value;
+
+    if(DB.ready){
+      // Server-side check — the password is verified by the database,
+      // not by anything shipped in this file.
+      $('#login-error').textContent = 'Checking…';
+      try {
+        const ok = await DB.checkPass(pass);
+        if(!ok){ $('#login-error').textContent = 'Incorrect password.'; return; }
+      } catch(err){
+        $('#login-error').textContent = err.message || 'Could not reach the database.';
+        return;
+      }
+    } else if(hashStr(pass) !== ADMIN_HASH){
       $('#login-error').textContent = 'Incorrect password.';
+      return;
     }
+
+    isAdmin = true;
+    ownerPass = pass;
+    try {
+      sessionStorage.setItem('openhouse-admin', '1');
+      sessionStorage.setItem('openhouse-pass', pass);
+    } catch(e2){}
+    refreshAdminUI();
+    closeLogin();
+    toast('Signed in — you can now upload apps.');
+    maybeMigrateLocal(); // offer to publish any apps stuck in this browser
   });
 
   /* sign-out handling moved into the overflow menu (see above) */
@@ -485,7 +561,7 @@
   $('#up-fetch').addEventListener('click', autoFillFromRepo);
   $('#up-repo').addEventListener('blur', autoFillFromRepo);
 
-  $('#upload-form').addEventListener('submit', e => {
+  $('#upload-form').addEventListener('submit', async e => {
     e.preventDefault();
     const errEl = $('#upload-error');
     const name = $('#up-name').value.trim();
@@ -499,7 +575,8 @@
     const newIcon = firstGrapheme(newIconRaw);
     if($('#up-category').value === '__new__' && newIcon){
       CUSTOM_GLYPHS[cat] = newIcon;
-      saveJSON(LS_ICONS, CUSTOM_GLYPHS);
+      if(DB.ready){ DB.setMeta(ownerPass, 'cat_icons', CUSTOM_GLYPHS).catch(()=>{}); }
+      else saveJSON(LS_ICONS, CUSTOM_GLYPHS);
     }
 
     const obj = {
@@ -513,6 +590,20 @@
       repo: $('#up-repo').value.trim(),
       thumb: pickedThumb || repoThumb || ''
     };
+
+    if(DB.ready){
+      errEl.textContent = 'Publishing…';
+      try {
+        const id = await DB.addApp(ownerPass, {
+          name: obj.name, cat: obj.cat, icon: obj.icon, description: obj.desc,
+          tags: obj.tags, license: obj.license, repo: obj.repo, thumb: obj.thumb
+        });
+        obj.id = id;
+      } catch(err){
+        errEl.textContent = err.message || 'Publish failed — check your connection.';
+        return;
+      }
+    }
 
     unhideCat(cat);
     BY_CAT[cat] = BY_CAT[cat] || [];
@@ -592,7 +683,14 @@
     });
   }
 
-  function deleteApp(cat, name){
+  async function deleteApp(cat, name){
+    if(DB.ready){
+      const app = (BY_CAT[cat] || []).find(a => a.name === name);
+      if(app && app.id != null){
+        try { await DB.deleteApp(ownerPass, app.id); }
+        catch(e){ toast(e.message || 'Delete failed.'); return; }
+      }
+    }
     BY_CAT[cat] = (BY_CAT[cat] || []).filter(a => !(a.cat === cat && a.name === name));
     UPLOADS = UPLOADS.filter(a => !(a.cat === cat && a.name === name));
     saveUploads();
@@ -603,11 +701,40 @@
     toast('App deleted.');
   }
 
+  /* ---------------- MIGRATION (local → database, one-time) ----------------
+     If you added apps before the database was set up, they only lived in
+     this browser's localStorage. Once signed in (with the DB configured),
+     this offers to push those local apps to the shared database. */
+  async function maybeMigrateLocal(){
+    if(!DB.ready || !isAdmin || !LOCAL_UPLOADS.length) return;
+    let done = false;
+    try { done = localStorage.getItem('openhouse-migrated') === '1'; } catch(e){}
+    if(done) return;
+    const n = LOCAL_UPLOADS.length;
+    if(!window.confirm(n + ' app' + (n === 1 ? '' : 's') + ' from this browser haven\'t been published to the shared database yet. Publish them now so everyone can see them?')) return;
+    let ok = 0, fail = 0;
+    for(const a of LOCAL_UPLOADS){
+      try {
+        await DB.addApp(ownerPass, {
+          name: a.name, cat: a.cat, icon: a.icon || '•', description: a.desc,
+          tags: a.tags || [a.cat], license: a.license || 'MIT',
+          repo: a.repo || '', thumb: a.thumb || ''
+        });
+        ok++;
+      } catch(e){ fail++; }
+    }
+    try { localStorage.setItem('openhouse-migrated', '1'); } catch(e){}
+    toast('Published ' + ok + ' local app' + (ok === 1 ? '' : 's') + (fail ? ' (' + fail + ' failed)' : '') + '.');
+    loadFromDB();
+  }
+
   /* ---------------- INIT ---------------- */
-  mergeUploads();
   renderGrid();
   refreshAdminUI();
   buildPaletteApps();
+  if(DB.ready){
+    loadFromDB().then(maybeMigrateLocal);
+  }
 
   const paletteInput = $('#palette-input');
   if(paletteInput){
