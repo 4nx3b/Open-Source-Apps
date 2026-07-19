@@ -993,3 +993,42 @@ a{ transition:color .25s ease; }
 
 /* toast text slides in slightly after the container */
 .toast > span:last-child{ animation:rowIn .35s var(--ease) .08s both; }
+
+
+/* ============================================================
+   TOUCH DEVICES — hover styles must not stick after a tap
+   ============================================================ */
+@media (hover:none){
+  .feature-card:hover{ border-color:var(--panel-border); }
+  .cat-app:hover{ border-color:var(--panel-border); transform:none; box-shadow:none; }
+  .cat-pill:hover{ border-color:var(--panel-border); background:var(--panel); transform:none; box-shadow:none; }
+  .btn-outline:hover{ border-color:var(--panel-border); color:inherit; }
+  .icon-btn:hover{ transform:none; border-color:var(--panel-border); color:var(--text-dim); }
+  .palette-trigger:hover{ transform:none; border-color:var(--panel-border); }
+  .download-card:hover{ border-color:var(--panel-border); box-shadow:none; }
+  .feature-card:hover .card-glow, .download-card:hover .card-glow{ opacity:0; }
+  .cat-pill:hover .cat-ico{ animation:none; background:rgba(255,255,255,.06); }
+  .cat-pill:hover .cat-count{ background:rgba(255,255,255,.06); color:var(--text-faint); transform:none; }
+  .cat-app:hover .app-icon{ box-shadow:none; transform:none; }
+  .cat-app:hover .cat-thumb{ box-shadow:none; transform:none; }
+  .cat-app:hover .app-tags span{ border-color:var(--panel-border); transition-delay:0s; }
+  .btn:hover::before{ animation:none; }
+  .f-tag::after{ display:none; }
+}
+
+/* edit (pencil) button on app cards — owner only */
+.cat-edit{
+  position:absolute; top:10px; right:106px; width:26px; height:26px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  background:rgba(255,255,255,.06); color:var(--text-faint); z-index:2;
+  transition:background .2s, color .2s, transform .2s var(--ease);
+}
+.cat-edit:hover{ background:var(--accent-soft); color:var(--accent); }
+.cat-edit:active{ transform:scale(.85); }
+
+/* footer credit */
+.credit-link{
+  color:var(--accent); font-weight:600; position:relative;
+  transition:text-shadow .25s ease;
+}
+.credit-link:hover{ text-shadow:0 0 14px var(--accent-glow); }

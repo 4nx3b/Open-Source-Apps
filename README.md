@@ -153,6 +153,22 @@ begin
   update public.apps set starred = coalesce(p_on, false) where id = p_id;
 end $$;
 
+create or replace function public.owner_update_app(p_pass text, p_id bigint, p_app jsonb)
+returns void language plpgsql security definer set search_path = ''
+as $$
+begin
+  if not public.owner_check(p_pass) then raise exception 'unauthorized'; end if;
+  update public.apps set
+    name        = coalesce(p_app->>'name', name),
+    cat         = coalesce(p_app->>'cat', cat),
+    icon        = coalesce(p_app->>'icon', icon),
+    description = coalesce(p_app->>'description', description),
+    license     = coalesce(p_app->>'license', license),
+    repo        = coalesce(p_app->>'repo', repo),
+    thumb       = coalesce(p_app->>'thumb', thumb)
+  where id = p_id;
+end $$;
+
 create or replace function public.owner_set_meta(p_pass text, p_key text, p_value jsonb)
 returns void language plpgsql security definer set search_path = ''
 as $$
