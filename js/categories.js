@@ -818,39 +818,99 @@
     r.readAsDataURL(file);
   });
 
-  async function fetchRepo(url){
-    const m = url.match(/github\.com\/([^\/\s]+)\/([^\/\s?#]+)/i) || url.match(/^([^\/\s]+)\/([^\/\s]+)$/);
-    if(!m) throw new Error('bad url');
-    const owner = encodeURIComponent(m[1]);
-    const repo  = encodeURIComponent(m[2].replace(/\.git$/, ''));
-    const res = await fetch('https://api.github.com/repos/' + owner + '/' + repo, {
-      headers: { 'Accept': 'application/vnd.github+json' }
-    });
-    if(!res.ok) throw new Error('not found');
+  /* Fetch repo metadata from GitHub, GitLab, Gitea/Forgejo (incl. Codeberg),
+     or Bitbucket — self-hosted instances included. Returns a normalized
+     { name, desc, license, topics, avatar, source } object. */
+  function parseRepoUrl(url){
+    url = String(url || '').trim();
+    let m = url.match(/^https?:\/\/([^\/\s]+)\/([^\/\s]+)\/([^\/\s?#]+)/i);
+    if(m) return { host: m[1].toLowerCase(), owner: m[2], repo: m[3].replace(/\.git$/, '') };
+    m = url.match(/^([\w.-]+\.[a-z]{2,})\/([^\/\s]+)\/([^\/\s?#]+)/i);
+    if(m) return { host: m[1].toLowerCase(), owner: m[2], repo: m[3].replace(/\.git$/, '') };
+    m = url.match(/^([\w.-]+)\/([\w.-]+)$/); // bare owner/repo → GitHub
+    if(m) return { host: 'github.com', owner: m[1], repo: m[2].replace(/\.git$/, '') };
+    return null;
+  }
+
+  async function getJSON(u, headers){
+    const res = await fetch(u, headers ? { headers } : undefined);
+    if(!res.ok) throw new Error('http ' + res.status);
     return res.json();
   }
+
+  async function fetchRepo(url){
+    const p = parseRepoUrl(url);
+    if(!p) throw new Error('bad url');
+    const { host, owner, repo } = p;
+    const o = encodeURIComponent(owner), r = encodeURIComponent(repo);
+
+    if(host === 'github.com' || host === 'www.github.com'){
+      const d = await getJSON('https://api.github.com/repos/' + o + '/' + r,
+        { 'Accept': 'application/vnd.github+json' });
+      return {
+        name: d.name, desc: d.description || '',
+        license: (d.license && d.license.spdx_id && d.license.spdx_id !== 'NOASSERTION') ? d.license.spdx_id : '',
+        topics: d.topics || [], avatar: (d.owner && d.owner.avatar_url) || '', source: 'GitHub'
+      };
+    }
+
+    if(host === 'bitbucket.org'){
+      const d = await getJSON('https://api.bitbucket.org/2.0/repositories/' + o + '/' + r);
+      return {
+        name: d.name, desc: d.description || '', license: '',
+        topics: [], avatar: (d.links && d.links.avatar && d.links.avatar.href) || '', source: 'Bitbucket'
+      };
+    }
+
+    const isGitlab = host === 'gitlab.com' || host.includes('gitlab');
+    const gitlabFetch = async () => {
+      const d = await getJSON('https://' + host + '/api/v4/projects/' + encodeURIComponent(owner + '/' + repo) + '?license=true');
+      return {
+        name: d.name, desc: d.description || '',
+        license: (d.license && (d.license.nickname || d.license.key || d.license.name)) || '',
+        topics: d.topics || d.tag_list || [],
+        avatar: d.avatar_url || (d.namespace && d.namespace.avatar_url) || '', source: 'GitLab'
+      };
+    };
+    const giteaFetch = async () => {
+      const d = await getJSON('https://' + host + '/api/v1/repos/' + o + '/' + r);
+      const lic = Array.isArray(d.licenses) && d.licenses.length ? d.licenses[0] : '';
+      return {
+        name: d.name, desc: d.description || '', license: lic,
+        topics: d.topics || [], avatar: d.avatar_url || (d.owner && d.owner.avatar_url) || '',
+        source: host === 'codeberg.org' ? 'Codeberg' : 'Gitea'
+      };
+    };
+
+    // Known GitLab hosts try GitLab first; everything else tries the
+    // Gitea/Forgejo API first (Codeberg, gitea.com, self-hosted), then
+    // falls back to the other API.
+    const order = isGitlab ? [gitlabFetch, giteaFetch] : [giteaFetch, gitlabFetch];
+    try { return await order[0](); }
+    catch(e){ return order[1](); }
+  }
+
 
   async function autoFillFromRepo(){
     const url = $('#up-repo').value.trim();
     const hint = $('#up-repo-hint');
     const errEl = $('#upload-error');
-    if(!url){ hint.textContent = 'Enter a GitHub repo URL first.'; return; }
+    if(!url){ hint.textContent = 'Enter a repository URL first.'; return; }
     hint.textContent = 'Fetching repo info…';
     errEl.textContent = '';
     try {
       const d = await fetchRepo(url);
-      if(d.description) $('#up-desc').value = d.description;
+      if(d.desc) $('#up-desc').value = d.desc;
       if(!$('#up-name').value.trim() && d.name) $('#up-name').value = d.name;
-      const lic = (d.license && d.license.spdx_id && d.license.spdx_id !== 'NOASSERTION') ? d.license.spdx_id : '';
-      $('#up-license').value = lic;
+      $('#up-license').value = d.license || '';
       if(d.topics && d.topics.length){
         const lower = ORDER.map(x => x.toLowerCase());
-        const match = d.topics.find(t => lower.includes(t.toLowerCase()));
-        if(match){ $('#up-category').value = match; $('#up-newcat-field').hidden = true; }
+        const match = d.topics.find(t => lower.includes(String(t).toLowerCase()));
+        if(match){ $('#up-category').value = match; $('#up-newcat-field').hidden = true; syncSelectButton(); }
       }
-      repoThumb = (d.owner && d.owner.avatar_url) || '';
+      repoThumb = d.avatar || '';
       if(!pickedThumb && repoThumb) showThumb(repoThumb);
-      hint.textContent = 'Pulled from GitHub — edit the description if you like.';
+      hint.textContent = 'Pulled from ' + d.source + ' — edit the description if you like.';
     } catch(e){
       hint.textContent = 'Could not read that repo. You can type the description manually.';
     }
