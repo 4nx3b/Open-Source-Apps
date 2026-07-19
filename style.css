@@ -354,12 +354,11 @@ kbd{
 
 .cat-app-list{
   overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain;
-  scrollbar-width:thin; scrollbar-color:rgba(255,255,255,.15) transparent;
+  scrollbar-width:none; -ms-overflow-style:none;
   margin-top:8px; display:grid; grid-template-columns:1fr 1fr;
-  align-items:start; align-content:start; gap:8px; padding-right:4px; flex:1; min-height:0;
+  align-items:start; align-content:start; gap:8px; flex:1; min-height:0;
 }
-.cat-app-list::-webkit-scrollbar{ width:4px; }
-.cat-app-list::-webkit-scrollbar-thumb{ background:rgba(255,255,255,.15); border-radius:4px; }
+.cat-app-list::-webkit-scrollbar{ display:none; width:0; }
 .cat-app{ position:relative; overflow:visible; height:auto; padding:13px 12px; border-radius:var(--radius-md); background:var(--panel); border:1px solid var(--panel-border); display:flex; gap:11px; transform-style:preserve-3d; transition:transform .1s ease, border-color .3s ease; }
 .cat-app:hover{ border-color:var(--accent); }
 .cat-app:hover .card-glow{ opacity:1; }
@@ -460,9 +459,6 @@ body.modal-open{ pointer-events:none; overflow:hidden; }
 .cat-del{ position:absolute; top:10px; right:10px; width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,.06); color:var(--text-faint); z-index:2; transition:background .2s, color .2s; }
 .cat-del:hover{ background:rgba(255,90,90,.18); color:#ff7a7a; }
 
-/* tag edit button on app cards (owner only) */
-.cat-tags-edit{ position:absolute; top:10px; right:42px; width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,.06); color:var(--text-faint); z-index:2; transition:background .2s, color .2s; }
-.cat-tags-edit:hover{ background:var(--accent-soft); color:var(--accent); }
 
 /* ================= TAG EDITOR ================= */
 .tags-modal{ width:min(460px,100%); }
@@ -888,22 +884,9 @@ a{ transition:color .25s ease; }
   .story-img{ transition:none; transform:none; }
 }
 
-/* ================= STAR / FEATURED ================= */
-.cat-star{
-  position:absolute; top:10px; right:74px; width:26px; height:26px; border-radius:50%;
-  display:flex; align-items:center; justify-content:center;
-  background:rgba(255,255,255,.06); color:var(--text-faint); z-index:2;
-  transition:background .2s, color .2s, transform .2s var(--ease);
-}
-.cat-star:hover{ background:var(--accent-soft); color:var(--accent); }
-.cat-star.is-on{ color:var(--accent); background:var(--accent-soft); }
-.cat-star:active{ transform:scale(.85); }
-@keyframes starPop{ 0%{ transform:scale(1); } 45%{ transform:scale(1.35) rotate(12deg); } 100%{ transform:scale(1); } }
-.cat-star.is-on svg{ animation:starPop .4s var(--ease); }
-
 /* small badge visitors see on featured apps */
 .cat-star-badge{
-  position:absolute; top:10px; right:10px; z-index:2;
+  position:absolute; top:13px; right:76px; z-index:2;
   font-size:13px; color:var(--accent); text-shadow:0 0 10px var(--accent-glow);
 }
 
@@ -926,11 +909,10 @@ a{ transition:color .25s ease; }
 .info-modal{ width:min(520px,100%); max-height:82vh; display:flex; flex-direction:column; }
 .info-scroll{
   overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain;
-  scrollbar-width:thin; scrollbar-color:rgba(255,255,255,.15) transparent;
-  margin-top:4px; padding-right:6px; min-height:0;
+  scrollbar-width:none; -ms-overflow-style:none;
+  margin-top:4px; min-height:0;
 }
-.info-scroll::-webkit-scrollbar{ width:4px; }
-.info-scroll::-webkit-scrollbar-thumb{ background:rgba(255,255,255,.15); border-radius:4px; }
+.info-scroll::-webkit-scrollbar{ display:none; width:0; }
 .info-list{ display:flex; flex-direction:column; gap:12px; }
 .info-list li{
   position:relative; padding-left:22px;
@@ -1016,15 +998,6 @@ a{ transition:color .25s ease; }
   .f-tag::after{ display:none; }
 }
 
-/* edit (pencil) button on app cards — owner only */
-.cat-edit{
-  position:absolute; top:10px; right:106px; width:26px; height:26px; border-radius:50%;
-  display:flex; align-items:center; justify-content:center;
-  background:rgba(255,255,255,.06); color:var(--text-faint); z-index:2;
-  transition:background .2s, color .2s, transform .2s var(--ease);
-}
-.cat-edit:hover{ background:var(--accent-soft); color:var(--accent); }
-.cat-edit:active{ transform:scale(.85); }
 
 /* footer credit */
 .credit-link{
@@ -1032,3 +1005,52 @@ a{ transition:color .25s ease; }
   transition:text-shadow .25s ease;
 }
 .credit-link:hover{ text-shadow:0 0 14px var(--accent-glow); }
+
+
+/* ================= CARD ACTION MENU (owner) ================= */
+.cat-menu-wrap{ position:absolute; top:10px; right:42px; z-index:3; }
+.cat-menu-btn{
+  width:26px; height:26px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  background:rgba(255,255,255,.06); color:var(--text-faint);
+  transition:background .2s, color .2s, transform .2s var(--ease);
+}
+.cat-menu-btn:active{ transform:scale(.85); }
+.cat-menu{
+  position:absolute; top:calc(100% + 6px); right:0; min-width:132px;
+  background:rgba(18,18,22,.97); border:1px solid var(--panel-border);
+  border-radius:12px; padding:5px; display:flex; flex-direction:column; gap:2px;
+  box-shadow:0 18px 44px -12px rgba(0,0,0,.7); z-index:5;
+  opacity:0; visibility:hidden; transform:translateY(-6px) scale(.97);
+  transform-origin:top right;
+  transition:opacity .18s var(--ease), transform .18s var(--ease), visibility .18s;
+}
+.cat-menu.open{ opacity:1; visibility:visible; transform:translateY(0) scale(1); }
+.cat-menu-item{
+  padding:9px 12px; border-radius:8px; font-size:13px; font-weight:600;
+  color:var(--text-dim); text-align:left; width:100%;
+  transition:background .15s, color .15s;
+}
+.cat-menu-item:hover, .cat-menu-item:active{ background:var(--accent-soft); color:var(--text); }
+
+/* ================= TOUCH TAP FEEDBACK ================= */
+/* hover is neutralized on touch (sticky-hover fix) — give taps a quick
+   press response instead so interactions still feel alive */
+@media (hover:none){
+  .cat-pill:active{
+    border-color:var(--accent); background:var(--accent-soft);
+    transform:scale(.97); transition:transform .1s ease, background .15s ease, border-color .15s ease;
+  }
+  .cat-pill:active .cat-ico{ background:rgba(255,180,84,.22); }
+  .cat-app:active{
+    border-color:var(--accent); transform:scale(.985);
+    transition:transform .1s ease, border-color .15s ease;
+  }
+  .cat-app:active .card-glow{ opacity:1; }
+  .feature-card:active{ border-color:var(--accent); }
+  .feature-card:active .card-glow{ opacity:1; }
+  .btn:active{ transform:scale(.95); }
+  .btn-outline:active{ border-color:var(--accent); color:var(--accent); }
+  .icon-btn:active{ border-color:var(--accent); color:var(--accent); transform:scale(.94); }
+  .download-card:active .card-glow{ opacity:1; }
+}
