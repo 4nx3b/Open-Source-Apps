@@ -537,9 +537,10 @@
       if($('#tags-input').value.trim()) addDraftTag();
       const errEl = $('#tags-error');
       if(DB.ready && tagApp.id != null){
-        errEl.textContent = 'Saving…';
+        setFormBusy($('#tags-form'), true, 'Saving…');
         try { await DB.setTags(ownerPass, tagApp.id, tagDraft); }
-        catch(err){ errEl.textContent = err.message || 'Save failed.'; return; }
+        catch(err){ setFormBusy($('#tags-form'), false); errEl.textContent = err.message || 'Save failed.'; return; }
+        setFormBusy($('#tags-form'), false);
       }
       tagApp.tags = tagDraft.slice();
       saveUploads();
@@ -942,6 +943,24 @@
   $('#up-fetch').addEventListener('click', autoFillFromRepo);
   $('#up-repo').addEventListener('blur', autoFillFromRepo);
 
+  function setFormBusy(form, busy, label){
+    const btn = form.querySelector('button[type="submit"]');
+    if(!btn) return;
+    if(busy){
+      btn.dataset.label = btn.textContent;
+      // lock current width so the shorter/longer label can't resize the pill
+      btn.style.width = btn.getBoundingClientRect().width + 'px';
+      btn.textContent = label || 'Working…';
+      btn.setAttribute('aria-busy', 'true');
+      btn.disabled = true;
+    } else {
+      btn.textContent = btn.dataset.label || btn.textContent;
+      btn.style.width = '';
+      btn.removeAttribute('aria-busy');
+      btn.disabled = false;
+    }
+  }
+
   $('#upload-form').addEventListener('submit', async e => {
     e.preventDefault();
     const errEl = $('#upload-error');
@@ -998,9 +1017,10 @@
         thumb: pickedThumb || app.thumb || repoThumb || ''
       };
       if(DB.ready && app.id != null){
-        errEl.textContent = 'Saving…';
+        setFormBusy($('#upload-form'), true, 'Saving…');
         try { await DB.updateApp(ownerPass, app.id, patch); }
-        catch(err){ errEl.textContent = err.message || 'Save failed.'; return; }
+        catch(err){ setFormBusy($('#upload-form'), false); errEl.textContent = err.message || 'Save failed.'; return; }
+        setFormBusy($('#upload-form'), false);
       }
       app.name = name;
       app.cat = cat;
@@ -1024,7 +1044,7 @@
     }
 
     if(DB.ready){
-      errEl.textContent = 'Publishing…';
+      setFormBusy($('#upload-form'), true, 'Publishing…');
       try {
         const id = await DB.addApp(ownerPass, {
           name: obj.name, cat: obj.cat, icon: obj.icon, description: obj.desc,
@@ -1032,9 +1052,11 @@
         });
         obj.id = id;
       } catch(err){
+        setFormBusy($('#upload-form'), false);
         errEl.textContent = err.message || 'Publish failed — check your connection.';
         return;
       }
+      setFormBusy($('#upload-form'), false);
     }
 
     unhideCat(cat);
