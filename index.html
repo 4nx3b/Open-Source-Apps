@@ -4,7 +4,24 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Openhouse — Open source apps, built in the open</title>
-<meta name="description" content="A curated showcase of open source apps. No telemetry, no lock-in, free forever.">
+<meta name="description" content="A curated directory of open source apps. No telemetry, no lock-in, free forever.">
+<meta name="theme-color" content="#07070a">
+<link rel="icon" type="image/png" href="img/favicon.png">
+<link rel="apple-touch-icon" href="img/icon-192.png">
+<link rel="manifest" href="manifest.json">
+<!-- Open Graph / share cards -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Openhouse">
+<meta property="og:title" content="Openhouse — Open source apps, built in the open">
+<meta property="og:description" content="A curated directory of open source apps. No telemetry, no lock-in, free forever.">
+<meta property="og:url" content="https://openhouse-one.vercel.app/">
+<meta property="og:image" content="https://openhouse-one.vercel.app/img/og-card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Openhouse — Open source apps, built in the open">
+<meta name="twitter:description" content="A curated directory of open source apps. No telemetry, no lock-in, free forever.">
+<meta name="twitter:image" content="https://openhouse-one.vercel.app/img/og-card.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -68,7 +85,7 @@
     <div class="fog" aria-hidden="true"></div>
     <div class="grid-overlay" aria-hidden="true"></div>
     <div class="hero-content">
-      <p class="eyebrow reveal-up"><span class="dot"></span> 220+ apps · community maintained</p>
+      <p class="eyebrow reveal-up"><span class="dot"></span> <span id="hero-app-count">Open source</span> apps · community maintained</p>
       <h1 class="split-title" id="hero-title">Open source.<br>Built in the open.</h1>
       <p class="hero-sub reveal-up">
         Openhouse is a hand-picked directory of open source apps —
@@ -181,7 +198,7 @@
           Star on GitHub
         </a>
       </div>
-      <p class="fine-print">220+ apps and counting · reviewed by the community</p>
+      <p class="fine-print"><span id="cta-app-count">Apps</span> reviewed by the community, one by one.</p>
     </div>
   </section>
 
@@ -459,5 +476,12 @@
 <script src="js/particles.js"></script>
 <script src="js/main.js"></script>
 <script src="js/categories.js"></script>
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
+</script>
 </body>
 </html>
