@@ -17,7 +17,7 @@
   --ease:cubic-bezier(.16,1,.3,1);
 }
 
-*{box-sizing:border-box;margin:0;padding:0;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 
 /* The [hidden] attribute must always win — author rules like
    .field{display:flex} were overriding the browser default and leaking
@@ -354,28 +354,28 @@ kbd{
 .cat-pill .cat-count{ font-family:var(--font-mono); font-size:11px; color:var(--text-faint); background:rgba(255,255,255,.06); padding:2px 8px; border-radius:100px; margin-left:2px; }
 
 /* category popup */
-.cat-modal{ width:min(680px,100%); max-height:86vh; padding:28px 26px; display:flex; flex-direction:column; overflow:hidden; }
+.cat-modal{ width:min(680px,100%); max-height:86vh; padding:20px 18px; display:flex; flex-direction:column; overflow:hidden; }
 .cat-modal .modal-close{ background:rgba(255,255,255,.06); }
-.cat-modal h3{ margin:10px 0 4px; }
+.cat-modal h3{ margin:6px 0 2px; }
 .cat-meta{ font-family:var(--font-mono); font-size:11.5px; color:var(--text-faint); text-transform:uppercase; letter-spacing:.05em; }
 
-.cat-toolbar{ display:flex; align-items:center; gap:10px; margin-top:18px; flex-wrap:wrap; }
-.pages-pill{ display:inline-flex; align-items:center; gap:4px; padding:5px; border-radius:100px; background:var(--panel); border:1px solid var(--panel-border); }
-.pages-pill .pg{ min-width:30px;height:30px; padding:0 9px; border-radius:100px; font-family:var(--font-mono); font-size:12px; color:var(--text-dim); display:inline-flex; align-items:center; justify-content:center; transition:background .2s,color .2s; }
+.cat-toolbar{ display:flex; align-items:center; gap:8px; margin-top:10px; flex-wrap:wrap; }
+.pages-pill{ display:inline-flex; align-items:center; gap:2px; padding:3px; border-radius:100px; background:var(--panel); border:1px solid var(--panel-border); }
+.pages-pill .pg{ min-width:24px;height:24px; padding:0 7px; border-radius:100px; font-family:var(--font-mono); font-size:11px; color:var(--text-faint); display:inline-flex; align-items:center; justify-content:center; transition:background .2s,color .2s; }
 .pages-pill .pg:hover:not(:disabled){ color:var(--text); background:rgba(255,255,255,.06); }
-.pages-pill .pg.active{ background:var(--accent); color:#0a0a0a; font-weight:600; }
+.pages-pill .pg.active{ background:rgba(255,255,255,.14); color:var(--text); font-weight:600; }
 .pages-pill .pg:disabled{ opacity:.3; cursor:default; }
 
 
-.cat-app-list{ overflow-y:auto; margin-top:18px; display:grid; grid-template-columns:1fr 1fr; align-items:start; align-content:start; gap:12px; padding-right:6px; flex:1; min-height:0; }
-.cat-app{ position:relative; overflow:visible; height:auto; padding:18px 16px; border-radius:var(--radius-md); background:var(--panel); border:1px solid var(--panel-border); display:flex; gap:13px; transform-style:preserve-3d; transition:transform .1s ease, border-color .3s ease; }
+.cat-app-list{ overflow-y:auto; margin-top:10px; display:grid; grid-template-columns:1fr 1fr; align-items:start; align-content:start; gap:8px; padding-right:4px; flex:1; min-height:0; }
+.cat-app{ position:relative; overflow:visible; height:auto; padding:13px 12px; border-radius:var(--radius-md); background:var(--panel); border:1px solid var(--panel-border); display:flex; gap:11px; transform-style:preserve-3d; transition:transform .1s ease, border-color .3s ease; }
 .cat-app:hover{ border-color:var(--accent); }
 .cat-app:hover .card-glow{ opacity:1; }
 .cat-app .app-icon{ width:40px;height:40px;flex-shrink:0; font-size:17px; margin-bottom:0; }
 .cat-app h4{ font-size:15px; font-weight:600; margin-bottom:2px; }
-.cat-app p{ font-size:12.5px; color:var(--text-dim); line-height:1.5; margin:4px 0 10px; }
+.cat-app p{ font-size:12.5px; color:var(--text-dim); line-height:1.45; margin:3px 0 8px; }
 .cat-app .app-tags{ margin-bottom:0; }
-@media (max-width:560px){ .cat-app-list{ grid-template-columns:1fr; } .cat-modal{ padding:24px 18px; } }
+@media (max-width:560px){ .cat-app-list{ grid-template-columns:1fr; } .cat-modal{ padding:18px 14px; } }
 
 /* ================= TOASTS ================= */
 .toast-stack{position:fixed;bottom:24px;right:24px;z-index:190;display:flex;flex-direction:column;gap:10px;align-items:flex-end;}
@@ -779,7 +779,7 @@ input:focus, input:focus-visible, textarea:focus, textarea:focus-visible{ outlin
   background-clip:text;
   -webkit-text-fill-color:transparent;
   color:transparent;
-  animation:storyShimmer 3.2s linear infinite;
+  animation:storyShimmer 7s linear infinite;
 }
 @keyframes storyShimmer{
   from{ background-position:120% 0; }
