@@ -88,6 +88,20 @@
   function loadUploads(){ try { return JSON.parse(localStorage.getItem(LS_KEY)) || []; } catch(e){ return []; } }
   function saveUploads(){ if(DB.ready) return; try { localStorage.setItem(LS_KEY, JSON.stringify(UPLOADS)); } catch(e){} }
 
+  /* ---------------- ACTIVITY LOG ----------------
+     Owner actions (add/edit/move/star/delete/tags) recorded to the shared
+     site_meta table via the existing owner_set_meta RPC — visible to every
+     visitor in the changelog's Apps tab. Capped so it never grows unbounded. */
+  const LS_ACT = 'openhouse-activity';
+  let ACTIVITY = loadJSON(LS_ACT, []);
+  function logActivity(act, name, cat, extra){
+    ACTIVITY.unshift(Object.assign({ t: new Date().toISOString(), act, name, cat }, extra || {}));
+    if(ACTIVITY.length > 100) ACTIVITY.length = 100;
+    if(DB.ready){ DB.setMeta(ownerPass, 'activity', ACTIVITY).catch(() => {}); }
+    else saveJSON(LS_ACT, ACTIVITY);
+    buildAppLog();
+  }
+
   // Owner password is kept for the session so DB writes can be authorised
   // server-side (Supabase re-checks it on every write).
   let ownerPass = '';
@@ -119,6 +133,7 @@
       (meta || []).forEach(m => {
         if(m.key === 'hidden_cats' && Array.isArray(m.value)) HIDDEN_CATS = m.value;
         if(m.key === 'cat_icons' && m.value && typeof m.value === 'object') CUSTOM_GLYPHS = m.value;
+        if(m.key === 'activity' && Array.isArray(m.value)) ACTIVITY = m.value;
       });
       rebuildData();
       renderGrid();
@@ -585,6 +600,7 @@
       buildPaletteApps();
       updateStats();
       exitSelectMode();
+      names.forEach(n => logActivity('moved', n, cat, { from: cur.cat }));
       toast('Moved to “' + cat + '”.');
     }
   });
@@ -663,6 +679,7 @@
     buildPaletteApps();
     updateStats();
     render();
+    logActivity(next ? 'starred' : 'unstarred', app.name, app.cat);
     toast(next ? '"' + app.name + '" starred — now in Featured.' : '"' + app.name + '" removed from Featured.');
   }
 
@@ -740,6 +757,7 @@
       saveUploads();
       render();
       buildPaletteApps();
+      logActivity('retagged', tagApp.name, tagApp.cat);
       toast('Tags updated for "' + tagApp.name + '".');
       closeTagEditor();
     });
@@ -1198,6 +1216,7 @@
     /* ----- EDIT MODE: update the existing app in place ----- */
     if(editingApp){
       const app = editingApp;
+      const prevCat = app.cat;
       const patch = {
         name, cat, icon: glyphFor(cat),
         description: obj.desc, license: obj.license,
@@ -1227,6 +1246,8 @@
       errEl.textContent = '';
       editingApp = null;
       closeUpload();
+      if(prevCat !== cat) logActivity('moved', name, cat, { from: prevCat });
+      else logActivity('edited', name, cat);
       toast('“' + name + '” updated.');
       return;
     }
@@ -1259,6 +1280,7 @@
 
     errEl.textContent = '';
     closeUpload();
+    logActivity('added', name, cat);
     toast('App published to “' + cat + '”.');
     openCat(cat);
   });
@@ -1305,32 +1327,53 @@
   function buildAppLog(){
     const pane = $('#log-pane-apps');
     if(!pane) return;
-    const apps = UPLOADS.slice().sort((a, b) => {
-      const ka = (a.added || '') + '|' + String(a.id != null ? a.id : 0).padStart(12, '0');
-      const kb = (b.added || '') + '|' + String(b.id != null ? b.id : 0).padStart(12, '0');
-      return ka < kb ? 1 : ka > kb ? -1 : 0;
+
+    // Merge the live activity feed with an "added" event per app (covers
+    // apps published before activity logging existed). Deduplicate adds.
+    const events = [];
+    const seenAdd = new Set();
+    ACTIVITY.forEach(ev => {
+      if(ev.act === 'added') seenAdd.add(ev.name.toLowerCase());
+      events.push(ev);
     });
-    if(!apps.length){
-      pane.innerHTML = '<p class="log-empty">No apps published yet.</p>';
+    UPLOADS.forEach(a => {
+      if(!seenAdd.has(a.name.toLowerCase())){
+        events.push({ t: a.added || '', act: 'added', name: a.name, cat: a.cat });
+      }
+    });
+    events.sort((a, b) => (a.t || '') < (b.t || '') ? 1 : -1);
+
+    if(!events.length){
+      pane.innerHTML = '<p class="log-empty">No activity yet.</p>';
       return;
     }
+
     const MONTHS = ['January','February','March','April','May','June',
                     'July','August','September','October','November','December'];
+    const VERB = {
+      added:     a => `added to <em>${esc(a.cat)}</em>`,
+      edited:    a => `was edited`,
+      moved:     a => `moved ${a.from ? 'from <em>' + esc(a.from) + '</em> ' : ''}to <em>${esc(a.cat)}</em>`,
+      starred:   a => `starred — now in <em>Featured</em>`,
+      unstarred: a => `removed from <em>Featured</em>`,
+      retagged:  a => `got new tags`,
+      deleted:   a => `deleted from <em>${esc(a.cat)}</em>`
+    };
     const groups = [];
-    apps.forEach(a => {
-      const d = new Date(a.added || Date.now());
+    events.slice(0, 80).forEach(ev => {
+      const d = new Date(ev.t || Date.now());
       const label = isNaN(d) ? 'Earlier' : MONTHS[d.getMonth()] + ' ' + d.getFullYear();
       let g = groups[groups.length - 1];
       if(!g || g.label !== label){ g = { label, items: [] }; groups.push(g); }
       const day = isNaN(d) ? '' : String(d.getDate()).padStart(2, '0') + ' ' + MONTHS[d.getMonth()].slice(0, 3);
-      g.items.push({ app: a, day });
+      g.items.push({ ev, day });
     });
     pane.innerHTML = groups.map(g => `
       <div class="log-entry">
         <span class="log-date">${esc(g.label)}</span>
         <ul class="info-list log-apps">
-          ${g.items.map(({ app, day }) => `
-            <li><strong>${esc(app.name)}</strong> added to <em>${esc(app.cat)}</em>${day ? ` <span class="log-day">· ${esc(day)}</span>` : ''}</li>`).join('')}
+          ${g.items.map(({ ev, day }) => `
+            <li class="log-act log-act-${esc(ev.act)}"><strong>${esc(ev.name)}</strong> ${(VERB[ev.act] || VERB.edited)(ev)}${day ? ` <span class="log-day">· ${esc(day)}</span>` : ''}</li>`).join('')}
         </ul>
       </div>`).join('');
   }
@@ -1380,6 +1423,7 @@
     renderGrid();
     render();
     updateStats();
+    logActivity('deleted', name, cat);
     if(!silent) toast('App deleted.');
   }
 
