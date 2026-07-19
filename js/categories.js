@@ -99,8 +99,8 @@
       const [apps, meta] = await Promise.all([DB.fetchApps(), DB.fetchMeta()]);
       UPLOADS = apps.map(r => ({
         id: r.id, name: r.name, cat: r.cat, icon: r.icon,
-        desc: r.description, tags: r.tags || [r.cat], license: r.license,
-        added: (r.created_at || '').slice(0, 10), repo: r.repo, thumb: r.thumb || ''
+        desc: r.description, tags: Array.isArray(r.tags) ? r.tags : [r.cat], license: r.license,
+        added: r.created_at || '', repo: r.repo, thumb: r.thumb || ''
       }));
       (meta || []).forEach(m => {
         if(m.key === 'hidden_cats' && Array.isArray(m.value)) HIDDEN_CATS = m.value;
@@ -279,9 +279,14 @@
   /* ---------------- RENDER MODAL ---------------- */
   function sortedApps(){
     const arr = (BY_CAT[cur.cat] || []).slice();
-    arr.sort((a, b) => cur.sort === 'newest'
-      ? (a.added < b.added ? 1 : a.added > b.added ? -1 : 0)
-      : (a.added > b.added ? 1 : a.added < b.added ? -1 : 0));
+    // Compare full timestamps; fall back to id so same-day uploads still
+    // sort by true insertion order.
+    const key = a => (a.added || '') + '|' + String(a.id != null ? a.id : 0).padStart(12, '0');
+    arr.sort((a, b) => {
+      const ka = key(a), kb = key(b);
+      const cmp = ka < kb ? -1 : ka > kb ? 1 : 0;
+      return cur.sort === 'newest' ? -cmp : cmp;
+    });
     return arr;
   }
 
@@ -316,11 +321,12 @@
     const media = a.thumb
       ? `<img class="cat-thumb" src="${a.thumb}" alt="${esc(a.name)}">`
       : `<span class="app-icon">${esc(a.icon || glyphFor(a.cat))}</span>`;
-    const tags = a.tags.concat([a.license]).map(t => `<span>${esc(t)}</span>`).join('');
+    const tags = (a.tags || []).concat([a.license]).map(t => `<span>${esc(t)}</span>`).join('');
     const delBtn = isAdmin ? `<button class="cat-del" data-cursor="pointer" aria-label="Delete app" title="Delete app"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>` : '';
+    const tagBtn = isAdmin ? `<button class="cat-tags-edit" data-cursor="pointer" aria-label="Edit tags" title="Edit tags"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M20.59 13.41L13.42 20.58a2 2 0 0 1-2.83 0L3 13V3h10l7.59 7.59a2 2 0 0 1 0 2.82z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="7.5" cy="7.5" r="1.3" fill="currentColor"/></svg></button>` : '';
     return `<article class="cat-app tilt-card" data-cursor="pointer" data-repo="${esc(a.repo || '')}" data-name="${esc(a.name)}" data-cat="${esc(a.cat)}" style="animation-delay:${(i*0.05).toFixed(2)}s">
       <div class="card-glow"></div>
-      ${delBtn}
+      ${delBtn}${tagBtn}
       ${media}
       <div class="cat-app-body">
         <h4>${esc(a.name)}</h4>
@@ -361,6 +367,89 @@
           deleteApp(card.dataset.cat, name);
         }
       });
+      const tagBtn = card.querySelector('.cat-tags-edit');
+      if(tagBtn) tagBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        openTagEditor(card.dataset.cat, card.dataset.name);
+      });
+    });
+  }
+
+  /* ---------------- TAG EDITOR (owner only) ---------------- */
+  const tagsOverlay = $('#tags-overlay');
+  let tagApp = null;      // the app object being edited
+  let tagDraft = [];      // working copy of its tags
+
+  function renderTagChips(){
+    const wrap = $('#tags-chips');
+    wrap.innerHTML = tagDraft.length
+      ? tagDraft.map((t, i) =>
+          `<span class="tag-chip">${esc(t)}<button type="button" class="tag-chip-x" data-i="${i}" data-cursor="pointer" aria-label="Remove tag ${esc(t)}">✕</button></span>`
+        ).join('')
+      : `<span class="tags-empty">No tags yet — add one below.</span>`;
+    $$('.tag-chip-x', wrap).forEach(btn => {
+      btn.addEventListener('click', () => {
+        tagDraft.splice(parseInt(btn.dataset.i, 10), 1);
+        renderTagChips();
+      });
+    });
+  }
+
+  function addDraftTag(){
+    const input = $('#tags-input');
+    const v = input.value.trim().replace(/\s+/g, ' ');
+    if(!v) return;
+    if(v.length > 24){ $('#tags-error').textContent = 'Keep tags under 24 characters.'; return; }
+    if(tagDraft.length >= 8){ $('#tags-error').textContent = 'Max 8 tags per app.'; return; }
+    if(tagDraft.some(t => t.toLowerCase() === v.toLowerCase())){
+      $('#tags-error').textContent = 'That tag is already on this app.'; return;
+    }
+    $('#tags-error').textContent = '';
+    tagDraft.push(v);
+    input.value = '';
+    renderTagChips();
+    input.focus();
+  }
+
+  function openTagEditor(cat, name){
+    if(!isAdmin || !tagsOverlay) return;
+    tagApp = (BY_CAT[cat] || []).find(a => a.name === name);
+    if(!tagApp) return;
+    tagDraft = (tagApp.tags || []).slice();
+    $('#tags-app-name').textContent = tagApp.name;
+    $('#tags-input').value = '';
+    $('#tags-error').textContent = '';
+    renderTagChips();
+    tagsOverlay.classList.add('open');
+    setTimeout(() => { try { $('#tags-input').focus(); } catch(e){} }, 80);
+  }
+  function closeTagEditor(){ if(tagsOverlay) tagsOverlay.classList.remove('open'); tagApp = null; }
+
+  if(tagsOverlay){
+    $('#tags-close').addEventListener('click', closeTagEditor);
+    $('#tags-cancel').addEventListener('click', closeTagEditor);
+    tagsOverlay.addEventListener('click', e => { if(e.target === tagsOverlay) closeTagEditor(); });
+    $('#tags-add').addEventListener('click', addDraftTag);
+    $('#tags-input').addEventListener('keydown', e => {
+      if(e.key === 'Enter' || e.key === ','){ e.preventDefault(); addDraftTag(); }
+    });
+    $('#tags-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      if(!tagApp) return;
+      // fold any half-typed tag still in the input
+      if($('#tags-input').value.trim()) addDraftTag();
+      const errEl = $('#tags-error');
+      if(DB.ready && tagApp.id != null){
+        errEl.textContent = 'Saving…';
+        try { await DB.setTags(ownerPass, tagApp.id, tagDraft); }
+        catch(err){ errEl.textContent = err.message || 'Save failed.'; return; }
+      }
+      tagApp.tags = tagDraft.slice();
+      saveUploads();
+      render();
+      buildPaletteApps();
+      toast('Tags updated for "' + tagApp.name + '".');
+      closeTagEditor();
     });
   }
 
@@ -646,6 +735,7 @@
     if(e.key !== 'Escape') return;
     if(adminMenu && adminMenu.classList.contains('open')){ closeMenu(); return; }
     if(iconOverlay && iconOverlay.classList.contains('open')) closeIconEditor();
+    else if(tagsOverlay && tagsOverlay.classList.contains('open')) closeTagEditor();
     else if($('#cat-overlay').classList.contains('open')) closeCat();
     else if(uploadOverlay.classList.contains('open')) closeUpload();
     else if($('#login-overlay').classList.contains('open')) closeLogin();
