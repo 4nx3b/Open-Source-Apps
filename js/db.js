@@ -29,6 +29,7 @@ window.OpenhouseDB = (function(){
     });
     if(!res.ok){
       const txt = await res.text();
+      if(res.status === 404) throw new Error('Database function "' + fn + '" is missing — run the SQL from the README.');
       throw new Error(/unauthorized/i.test(txt) ? 'Wrong password.' : 'DB write failed: ' + res.status);
     }
     const txt = await res.text();
