@@ -91,12 +91,19 @@
   }
 
   /* ============ MOUSE SPOTLIGHT ============ */
+  // rAF-throttled: paints at most once per frame instead of per pointer event
   const spotlight = $('#spotlight');
   if(!isTouch && spotlight){
+    let sx = 0, sy = 0, spotRaf = null;
     window.addEventListener('pointermove', e => {
-      spotlight.style.setProperty('--sx', e.clientX + 'px');
-      spotlight.style.setProperty('--sy', e.clientY + 'px');
-    });
+      sx = e.clientX; sy = e.clientY;
+      if(spotRaf) return;
+      spotRaf = requestAnimationFrame(() => {
+        spotRaf = null;
+        spotlight.style.setProperty('--sx', sx + 'px');
+        spotlight.style.setProperty('--sy', sy + 'px');
+      });
+    }, { passive:true });
   }
 
   /* ============ MAGNETIC BUTTONS ============ */

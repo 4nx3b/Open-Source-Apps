@@ -315,7 +315,7 @@
 
   function cardHTML(a, i){
     const media = a.thumb
-      ? `<img class="cat-thumb" src="${a.thumb}" alt="${esc(a.name)}">`
+      ? `<img class="cat-thumb" src="${a.thumb}" alt="${esc(a.name)}" loading="lazy" decoding="async">`
       : `<span class="app-icon">${esc(a.icon || glyphFor(a.cat))}</span>`;
     const tags = (a.tags || []).concat([a.license]).map(t => `<span>${esc(t)}</span>`).join('');
     const delBtn = isAdmin ? `<button class="cat-del" data-cursor="pointer" aria-label="Delete app" title="Delete app"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>` : '';
@@ -337,19 +337,27 @@
 
   function bindCards(){
     if(!isTouch){
+      // rAF-throttled tilt: layout is read once per hover, painted once per frame
       $$('.cat-app', listEl).forEach(card => {
+        let rect = null, raf = null, pending = null;
+        card.addEventListener('mouseenter', () => { rect = card.getBoundingClientRect(); });
         card.addEventListener('mousemove', e => {
-          const r = card.getBoundingClientRect();
-          const px = (e.clientX - r.left) / r.width;
-          const py = (e.clientY - r.top) / r.height;
-          if(!reduced){
-            card.style.transform =
-              `perspective(700px) rotateX(${(0.5 - py) * 8}deg) rotateY(${(px - 0.5) * 8}deg) translateZ(4px)`;
-          }
-          card.style.setProperty('--mx', (px * 100) + '%');
-          card.style.setProperty('--my', (py * 100) + '%');
+          pending = e;
+          if(raf) return;
+          raf = requestAnimationFrame(() => {
+            raf = null;
+            if(!pending || !rect) return;
+            const px = (pending.clientX - rect.left) / rect.width;
+            const py = (pending.clientY - rect.top) / rect.height;
+            if(!reduced){
+              card.style.transform =
+                `perspective(700px) rotateX(${(0.5 - py) * 8}deg) rotateY(${(px - 0.5) * 8}deg) translateZ(4px)`;
+            }
+            card.style.setProperty('--mx', (px * 100) + '%');
+            card.style.setProperty('--my', (py * 100) + '%');
+          });
         });
-        card.addEventListener('mouseleave', () => { card.style.transform = ''; });
+        card.addEventListener('mouseleave', () => { rect = null; card.style.transform = ''; });
       });
     }
     $$('.cat-app', listEl).forEach(card => {
