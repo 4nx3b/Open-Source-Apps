@@ -978,24 +978,15 @@ a{ transition:color .25s ease; }
 
 
 /* ============================================================
-   TOUCH DEVICES — hover styles must not stick after a tap
+   TOUCH DEVICES — keep glows/animations after a tap (sticky hover
+   is welcome); only the orange border/outline must never stick.
    ============================================================ */
 @media (hover:none){
-  .feature-card:hover{ border-color:var(--panel-border); }
-  .cat-app:hover{ border-color:var(--panel-border); transform:none; box-shadow:none; }
-  .cat-pill:hover{ border-color:var(--panel-border); background:var(--panel); transform:none; box-shadow:none; }
-  .btn-outline:hover{ border-color:var(--panel-border); color:inherit; }
-  .icon-btn:hover{ transform:none; border-color:var(--panel-border); color:var(--text-dim); }
-  .palette-trigger:hover{ transform:none; border-color:var(--panel-border); }
-  .download-card:hover{ border-color:var(--panel-border); box-shadow:none; }
-  .feature-card:hover .card-glow, .download-card:hover .card-glow{ opacity:0; }
-  .cat-pill:hover .cat-ico{ animation:none; background:rgba(255,255,255,.06); }
-  .cat-pill:hover .cat-count{ background:rgba(255,255,255,.06); color:var(--text-faint); transform:none; }
-  .cat-app:hover .app-icon{ box-shadow:none; transform:none; }
-  .cat-app:hover .cat-thumb{ box-shadow:none; transform:none; }
-  .cat-app:hover .app-tags span{ border-color:var(--panel-border); transition-delay:0s; }
-  .btn:hover::before{ animation:none; }
-  .f-tag::after{ display:none; }
+  .feature-card:hover, .cat-app:hover, .cat-pill:hover,
+  .download-card:hover, .btn-outline:hover, .icon-btn:hover,
+  .palette-trigger:hover{ border-color:var(--panel-border); }
+  .btn-outline:hover{ color:inherit; }
+  .icon-btn:hover{ transform:none; color:var(--text-dim); }
 }
 
 
@@ -1018,7 +1009,8 @@ a{ transition:color .25s ease; }
 .cat-menu-btn:active{ transform:scale(.85); }
 .cat-menu{
   position:absolute; top:calc(100% + 6px); right:0; min-width:132px;
-  background:rgba(18,18,22,.97); border:1px solid var(--panel-border);
+  background:rgba(18,18,22,.72); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+  border:1px solid var(--panel-border);
   border-radius:12px; padding:5px; display:flex; flex-direction:column; gap:2px;
   box-shadow:0 18px 44px -12px rgba(0,0,0,.7); z-index:5;
   opacity:0; visibility:hidden; transform:translateY(-6px) scale(.97);
@@ -1033,24 +1025,95 @@ a{ transition:color .25s ease; }
 }
 .cat-menu-item:hover, .cat-menu-item:active{ background:var(--accent-soft); color:var(--text); }
 
-/* ================= TOUCH TAP FEEDBACK ================= */
-/* hover is neutralized on touch (sticky-hover fix) — give taps a quick
-   press response instead so interactions still feel alive */
+/* ================= TOUCH PRESS FEEDBACK ================= */
+/* quick squish while the finger is down (no orange border) */
 @media (hover:none){
-  .cat-pill:active{
-    border-color:var(--accent); background:var(--accent-soft);
-    transform:scale(.97); transition:transform .1s ease, background .15s ease, border-color .15s ease;
-  }
-  .cat-pill:active .cat-ico{ background:rgba(255,180,84,.22); }
-  .cat-app:active{
-    border-color:var(--accent); transform:scale(.985);
-    transition:transform .1s ease, border-color .15s ease;
-  }
-  .cat-app:active .card-glow{ opacity:1; }
-  .feature-card:active{ border-color:var(--accent); }
-  .feature-card:active .card-glow{ opacity:1; }
+  .cat-pill:active{ transform:scale(.97); transition:transform .1s ease; }
+  .cat-app:active{ transform:scale(.985); transition:transform .1s ease; }
   .btn:active{ transform:scale(.95); }
-  .btn-outline:active{ border-color:var(--accent); color:var(--accent); }
-  .icon-btn:active{ border-color:var(--accent); color:var(--accent); transform:scale(.94); }
-  .download-card:active .card-glow{ opacity:1; }
+  .icon-btn:active{ transform:scale(.94); }
 }
+
+/* ============================================================
+   SITE-WIDE ABSTRACT WIREFRAME BACKDROP
+   Same blueprint-sketch lines as the story collage, tiled across
+   the whole page on a fixed layer with a slow drift.
+   ============================================================ */
+body::before{
+  content:''; position:fixed; inset:-60px; z-index:0; pointer-events:none;
+  opacity:.4;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='900' viewBox='0 0 900 900' fill='none' stroke='%23ffffff' stroke-opacity='0.05' stroke-width='1.5'%3E%3Crect x='40' y='120' width='300' height='90'/%3E%3Crect x='560' y='60' width='260' height='140'/%3E%3Crect x='120' y='680' width='340' height='110' transform='rotate(-4 290 735)'/%3E%3Crect x='620' y='560' width='240' height='200'/%3E%3Cpath d='M0 420 L340 400 L360 470 L20 490 Z'/%3E%3Cpath d='M700 300 L900 280 M640 840 L880 800'/%3E%3Cpath d='M80 40 L80 260 M840 420 L840 700'/%3E%3Cpath d='M400 880 L760 860 L770 900'/%3E%3C/svg%3E");
+  background-size:820px 820px;
+  background-repeat:repeat;
+  animation:wireDrift 90s linear infinite;
+  will-change:transform;
+}
+@keyframes wireDrift{
+  from{ transform:translate3d(0,0,0); }
+  to{ transform:translate3d(-820px,-820px,0); }
+}
+/* page content stays above the wireframe layer */
+main, .topbar, .footer, .dock{ position:relative; z-index:1; }
+.topbar{ z-index:60; } .dock{ z-index:90; }
+
+@media (prefers-reduced-motion: reduce){
+  body::before{ animation:none; }
+}
+
+/* ============================================================
+   POLISH ROUND 6
+   ============================================================ */
+
+/* hero title: one amber shimmer sweep after it settles */
+body.loaded .split-title{
+  background:linear-gradient(100deg, var(--text) 40%, #ffd9a0 50%, var(--text) 60%);
+  background-size:300% 100%; background-position:100% 0;
+  -webkit-background-clip:text; background-clip:text;
+  animation:titleSheen 2.4s ease .9s 1;
+}
+@keyframes titleSheen{
+  0%{ background-position:100% 0; -webkit-text-fill-color:transparent; }
+  99%{ background-position:-100% 0; -webkit-text-fill-color:transparent; }
+  100%{ -webkit-text-fill-color:currentColor; }
+}
+
+/* stats: staggered rise */
+.stats .stat:nth-child(1).reveal-up.in{ transition-delay:.00s; }
+.stats .stat:nth-child(2).reveal-up.in{ transition-delay:.08s; }
+.stats .stat:nth-child(3).reveal-up.in{ transition-delay:.16s; }
+.stats .stat:nth-child(4).reveal-up.in{ transition-delay:.24s; }
+
+/* dock icons pop in one-by-one on load */
+body.loaded .dock a, body.loaded .dock button{ animation:dockPop .5s var(--ease) both; }
+body.loaded .dock a:nth-child(1){ animation-delay:.55s; }
+body.loaded .dock a:nth-child(2){ animation-delay:.63s; }
+body.loaded .dock a:nth-child(3){ animation-delay:.71s; }
+body.loaded .dock a:nth-child(4){ animation-delay:.79s; }
+@keyframes dockPop{ from{ opacity:0; transform:scale(.5); } to{ opacity:1; transform:scale(1); } }
+
+/* marquee entries lift on hover (desktop) */
+@media (hover:hover){
+  .marquee-track span{ display:inline-block; transition:transform .25s var(--ease), color .3s ease; }
+  .marquee-track span:hover{ transform:translateY(-2px); color:var(--accent); }
+}
+
+/* category popup: pages pill slides in from left, meta from right */
+.modal-overlay.open .cat-modal .pages-pill{ animation:slideL .45s var(--ease) .08s both; }
+@keyframes slideL{ from{ opacity:0; transform:translateX(-10px); } to{ opacity:1; transform:none; } }
+
+/* card menus: items cascade */
+.cat-menu.open .cat-menu-item{ animation:rowIn .3s var(--ease) both; }
+.cat-menu.open .cat-menu-item:nth-child(1){ animation-delay:.03s; }
+.cat-menu.open .cat-menu-item:nth-child(2){ animation-delay:.07s; }
+.cat-menu.open .cat-menu-item:nth-child(3){ animation-delay:.11s; }
+
+/* thumbnails shimmer once while loading */
+.cat-thumb{ background:linear-gradient(110deg, rgba(255,255,255,.04) 30%, rgba(255,255,255,.1) 50%, rgba(255,255,255,.04) 70%); background-size:200% 100%; animation:thumbShimmer 1.4s ease infinite; }
+@keyframes thumbShimmer{ from{ background-position:120% 0; } to{ background-position:-120% 0; } }
+
+/* upload/login inputs: caret in accent color */
+input, textarea{ caret-color:var(--accent); }
+
+/* welcome modal: title letters rise */
+.modal-overlay.open .modal h3{ animation:rowIn .5s var(--ease) .1s both; }
+.modal-overlay.open .modal > p{ animation:rowIn .5s var(--ease) .18s both; }
