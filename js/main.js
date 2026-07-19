@@ -5,23 +5,22 @@
   const $$ = (s, ctx=document) => Array.from(ctx.querySelectorAll(s));
 
   /* ============ LOADER ============ */
+  // Smooth eased progress: rAF-driven, decelerates toward 100% like a real
+  // network load, then finishes with a quick snap. No random jumps.
   const loader = $('#loader');
   const loaderFill = $('#loader-fill');
   const loaderPct = $('#loader-pct');
-  let pct = 0;
-  const loadTimer = setInterval(() => {
-    pct += Math.random() * 18;
-    if(pct >= 100){
-      pct = 100;
-      clearInterval(loadTimer);
-      loaderFill.style.width = '100%';
-      loaderPct.textContent = '100%';
-      setTimeout(finishLoad, 280);
-      return;
-    }
+  const LOAD_DUR = 1100; // total ms — quick but visible
+  const loadStart = performance.now();
+  (function loadTick(now){
+    const p = Math.min((now - loadStart) / LOAD_DUR, 1);
+    const eased = 1 - Math.pow(1 - p, 2.4); // ease-out
+    const pct = Math.floor(eased * 100);
     loaderFill.style.width = pct + '%';
-    loaderPct.textContent = Math.floor(pct) + '%';
-  }, 140);
+    loaderPct.textContent = pct;
+    if(p < 1){ requestAnimationFrame(loadTick); }
+    else { setTimeout(finishLoad, 220); }
+  })(loadStart);
 
   function finishLoad(){
     loader.classList.add('hide');
