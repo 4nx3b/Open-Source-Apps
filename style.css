@@ -1068,18 +1068,8 @@ main, .footer{ position:relative; z-index:1; }
    POLISH ROUND 6
    ============================================================ */
 
-/* hero title: one amber shimmer sweep after it settles */
-body.loaded .split-title{
-  background:linear-gradient(100deg, var(--text) 40%, #ffd9a0 50%, var(--text) 60%);
-  background-size:300% 100%; background-position:100% 0;
-  -webkit-background-clip:text; background-clip:text;
-  animation:titleSheen 2.4s ease .9s 1;
-}
-@keyframes titleSheen{
-  0%{ background-position:100% 0; -webkit-text-fill-color:transparent; }
-  99%{ background-position:-100% 0; -webkit-text-fill-color:transparent; }
-  100%{ -webkit-text-fill-color:currentColor; }
-}
+/* (hero title sheen removed — background-clip:text broke rendering on
+   Android Chrome, making the title vanish after its entrance animation) */
 
 /* stats: staggered rise */
 .stats .stat:nth-child(1).reveal-up.in{ transition-delay:.00s; }
@@ -1121,3 +1111,13 @@ input, textarea{ caret-color:var(--accent); }
 /* welcome modal: title letters rise */
 .modal-overlay.open .modal h3{ animation:rowIn .5s var(--ease) .1s both; }
 .modal-overlay.open .modal > p{ animation:rowIn .5s var(--ease) .18s both; }
+
+/* ============================================================
+   TEXT SELECTION — app-like surface: long-press must not start
+   copying text. Inputs/textareas stay selectable for typing.
+   ============================================================ */
+body{
+  -webkit-user-select:none; user-select:none;
+  -webkit-touch-callout:none;
+}
+input, textarea{ -webkit-user-select:text; user-select:text; }
