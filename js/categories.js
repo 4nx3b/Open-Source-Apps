@@ -664,9 +664,12 @@
     const repo = normalizeRepo(card.dataset.repo);
     if(!el || !repo) return;
     const hit = updCache[repo];
-    if(hit && Date.now() - hit.t < 86400000){
-      if(hit.v){ el.textContent = timeAgo(hit.v); el.hidden = false; }
-      return;
+    if(hit){
+      const maxAge = hit.v ? 86400000 : 900000; // 24h hits, 15min misses
+      if(Date.now() - hit.t < maxAge){
+        if(hit.v){ el.textContent = timeAgo(hit.v); el.hidden = false; }
+        return;
+      }
     }
     if(updInFlight.has(repo)) return;
     updInFlight.add(repo);
@@ -1063,9 +1066,10 @@
     try {
       const res = await fetchTimed(u, headers ? { headers } : undefined, 6000);
       if(res.ok) return res.json();
-      if(res.status === 404 || res.status === 403) throw new Error('http ' + res.status);
+      if(res.status === 404) throw new Error('http 404');
+      // 403 (e.g. GitHub rate limit) falls through to the proxies below
     } catch(e){
-      if(/^http (404|403)$/.test(e.message)) throw e; // real "not found" — stop here
+      if(e.message === 'http 404') throw e; // real "not found" — stop here
     }
     // 2) CORS-blocked (typical for self-hosted forges) → proxy fallbacks.
     //    First our own Vercel function (fast + reliable), then public ones.
