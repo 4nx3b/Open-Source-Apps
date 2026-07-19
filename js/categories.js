@@ -64,7 +64,6 @@
       BY_CAT[a.cat].push(a);
     });
   }
-  rebuildData();
 
   function unhideCat(cat){
     const i = HIDDEN_CATS.indexOf(cat);
@@ -89,6 +88,10 @@
   // server-side (Supabase re-checks it on every write).
   let ownerPass = '';
   try { ownerPass = sessionStorage.getItem('openhouse-pass') || ''; } catch(e){}
+
+  // Build the initial category/app maps (must run AFTER UPLOADS + DB exist).
+  rebuildData();
+
   /* ---------------- LOAD FROM DATABASE ---------------- */
   async function loadFromDB(){
     if(!DB.ready) return;
