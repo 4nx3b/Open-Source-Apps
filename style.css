@@ -25,7 +25,7 @@
 [hidden]{display:none !important;}
 
 h1,h2,h3{ font-variation-settings:'wght' 600; transition:font-variation-settings .4s ease; }
-.app-card:hover h3, .feature-card:hover h3, .download-card:hover h2{ font-variation-settings:'wght' 700; }
+.feature-card:hover h3, .download-card:hover h2{ font-variation-settings:'wght' 700; }
 .split-title{ font-variation-settings:'wght' 640; }
 
 html{background:var(--bg);scrollbar-width:none;-ms-overflow-style:none;}
@@ -192,36 +192,21 @@ kbd{
    content mid-scroll, causing layout jumps + jank right after the
    "Why Openhouse" section (and a big phantom gap before the CTA card).
    The page is small; plain paint containment is cheaper and stable. */
-.app-card,.feature-card{contain:layout style paint;}
+.feature-card{contain:layout style paint;}
 
 /* ================= SHOWCASE (horizontal) ================= */
 .showcase{position:relative;z-index:2;padding:60px 0 100px;}
 .showcase-head{max-width:1180px;margin:0 auto 50px;padding:0 26px;text-align:center;}
 .showcase-head h2{font-size:clamp(28px,4vw,42px);font-weight:600;}
-.showcase-track{display:flex;gap:22px;overflow-x:auto;padding:10px 26px 30px;scroll-snap-type:x proximity;}
-.app-card{
-  scroll-snap-align:start;flex:0 0 300px;position:relative;overflow:hidden;
-  padding:28px 24px;border-radius:var(--radius-md);
-  background:var(--panel);border:1px solid var(--panel-border);
-  backdrop-filter:blur(8px);
-  transform-style:preserve-3d;transition:transform .1s ease, border-color .3s ease;
-  animation:float-idle 6s ease-in-out infinite;
-}
-.app-card:nth-child(2n){animation-delay:-2s;}
-.app-card:nth-child(3n){animation-delay:-4s;}
-@keyframes float-idle{ 0%,100%{translate:0 0;} 50%{translate:0 -6px;} }
-.app-card:hover{border-color:var(--accent);}
 .card-glow{
   position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;transition:opacity .3s ease;
   background:radial-gradient(220px circle at var(--mx,50%) var(--my,50%), rgba(255,180,84,.16), transparent 70%);
 }
-.app-card:hover .card-glow, .feature-card:hover .card-glow, .download-card:hover .card-glow{opacity:1;}
+.feature-card:hover .card-glow, .download-card:hover .card-glow{opacity:1;}
 .app-icon{
   display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:12px;
   background:var(--accent-soft);color:var(--accent);font-size:20px;margin-bottom:18px;
 }
-.app-card h3{font-size:19px;font-weight:600;margin-bottom:8px;}
-.app-card p{font-size:13.8px;color:var(--text-dim);line-height:1.55;margin-bottom:18px;}
 .app-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;}
 .app-tags span{
   font-family:var(--font-mono);font-size:10.5px;padding:3px 9px;border-radius:100px;
@@ -356,7 +341,7 @@ kbd{
 /* category popup */
 .cat-modal{ width:min(680px,100%); max-height:86vh; padding:20px 18px; display:flex; flex-direction:column; overflow:hidden; }
 .cat-modal .modal-close{ background:rgba(255,255,255,.06); }
-.cat-modal h3{ margin:2px 0 0; font-size:19px; }
+.cat-modal h3{ margin:0 36px 0 0; font-size:19px; }
 .cat-meta{ font-family:var(--font-mono); font-size:10.5px; color:var(--text-faint); text-transform:uppercase; letter-spacing:.05em; margin-top:1px; }
 
 .cat-toolbar{ display:flex; align-items:center; gap:8px; margin-top:6px; flex-wrap:wrap; }
@@ -408,7 +393,6 @@ kbd{
   .feature-grid{grid-template-columns:1fr;}
   .hero{padding-top:130px;}
   .dock a::after,.dock button::after{display:none;}
-  .app-card{flex:0 0 260px;}
 }
 
 @media (prefers-reduced-motion: reduce){
@@ -527,9 +511,8 @@ body.modal-open{ pointer-events:none; overflow:hidden; }
    jank on phones — but the dock + top-bar pills are tiny fixed elements,
    so their blur stays (it's cheap and part of the look). */
 @media (hover:none){
-  .app-card,.feature-card,.download-card{ backdrop-filter:none; -webkit-backdrop-filter:none; background:rgba(20,20,24,.85); }
+  .feature-card,.download-card{ backdrop-filter:none; -webkit-backdrop-filter:none; background:rgba(20,20,24,.85); }
   .fog{ animation:none; filter:blur(24px); }
-  .app-card{ animation:none; }
 }
 
 /* ============================================================
@@ -920,3 +903,18 @@ a{ transition:color .25s ease; }
   position:absolute; top:10px; right:10px; z-index:2;
   font-size:13px; color:var(--accent); text-shadow:0 0 10px var(--accent-glow);
 }
+
+
+/* ============================================================
+   LOW-END DEVICE OPTIMIZATIONS — same visuals, cheaper to render
+   ============================================================ */
+/* isolate heavy sections so layout/paint work can't spill across */
+.hero,.story,.showcase,.features,.download,.footer{ contain:layout style; }
+/* fixed decorative layers: promoted + contained, never repainted on scroll */
+.spotlight{ will-change:background; contain:strict; }
+/* story images: GPU layer only while section is near view */
+.story-img{ content-visibility:auto; }
+/* infinite animations pause when their section is off-screen (browser-managed) */
+.marquee-track{ will-change:transform; }
+/* cheaper text rendering for long mono blocks */
+.typewrite,.story-line{ text-rendering:optimizeSpeed; }
