@@ -859,9 +859,17 @@ a{ transition:color .25s ease; }
   opacity:0;
   transform:scale(1.06);
   transition:opacity 1s var(--ease), transform 1.4s var(--ease);
-  /* fade out toward all corners/edges — no hard rectangle line */
-  -webkit-mask-image:radial-gradient(ellipse 62% 58% at 50% 50%, rgba(0,0,0,.85) 30%, rgba(0,0,0,.35) 62%, transparent 82%);
-  mask-image:radial-gradient(ellipse 62% 58% at 50% 50%, rgba(0,0,0,.85) 30%, rgba(0,0,0,.35) 62%, transparent 82%);
+  border-radius:28px;
+  /* rectangular fade: horizontal + vertical gradients intersected, so the
+     shape stays a rounded rectangle with soft edges (not an oval) */
+  -webkit-mask-image:
+    linear-gradient(to right, transparent 0%, black 18%, black 82%, transparent 100%),
+    linear-gradient(to bottom, transparent 0%, black 18%, black 82%, transparent 100%);
+  -webkit-mask-composite:source-in;
+  mask-image:
+    linear-gradient(to right, transparent 0%, black 18%, black 82%, transparent 100%),
+    linear-gradient(to bottom, transparent 0%, black 18%, black 82%, transparent 100%);
+  mask-composite:intersect;
   filter:saturate(.85) contrast(1.02) brightness(.8);
 }
 .story-img.on{
