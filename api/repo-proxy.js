@@ -12,8 +12,10 @@
 
 const ALLOWED_PATH = new RegExp(
   '^/(' +
-    'api/v1/repos/[^/]+/[^/]+' + // Gitea / Forgejo
-    '|api/v4/projects/[^/]+' +   // GitLab
+    'api/v1/repos/[^/]+/[^/]+' +      // Gitea / Forgejo
+    '|api/v4/projects/[^/]+' +        // GitLab
+    '|repos/[^/]+/[^/]+' +            // GitHub (api.github.com)
+    '|2\\.0/repositories/[^/]+/[^/]+' + // Bitbucket
   ')/?$'
 );
 
@@ -51,7 +53,7 @@ module.exports = async (req, res) => {
     clearTimeout(timer);
     const body = await upstream.text();
     res.setHeader('Content-Type', 'application/json');
-    res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=600');
+    res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate=86400');
     return res.status(upstream.status).send(body);
   } catch (e) {
     return res.status(502).json({ error: 'upstream unreachable' });
