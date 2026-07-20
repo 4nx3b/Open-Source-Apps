@@ -143,9 +143,11 @@
       rebuildData();
       renderGrid();
       buildPaletteApps();
+      buildAppLog();
       updateStats();
       if(overlay.classList.contains('open')) render();
     } catch(e){
+      console.error('DB load error:', e);
       toast('Could not load apps from the database.');
     }
   }
@@ -1504,7 +1506,7 @@
       const day = isNaN(d) ? '' : String(d.getDate()).padStart(2, '0') + ' ' + MONTHS[d.getMonth()].slice(0, 3);
       g.items.push({ ev, day });
     });
-    pane.innerHTML = groups.map(g => `
+    const html = groups.map(g => `
       <div class="log-entry">
         <span class="log-date">${esc(g.label)}</span>
         <ul class="info-list log-apps">
