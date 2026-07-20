@@ -97,18 +97,8 @@
   function logActivity(act, name, cat, extra){
     ACTIVITY.unshift(Object.assign({ t: new Date().toISOString(), act, name, cat }, extra || {}));
     if(ACTIVITY.length > 100) ACTIVITY.length = 100;
-
-    // Always keep a local backup. This prevents the feed disappearing when
-    // the database is temporarily unavailable, and is also useful when an
-    // older deployment did not persist activity correctly.
-    saveJSON(LS_ACT, ACTIVITY);
-
-    // The shared database remains the source for visitors on other devices.
-    if(DB.ready){
-      DB.setMeta(ownerPass, 'activity', ACTIVITY).catch(e =>
-        console.warn('Could not save changelog activity:', e)
-      );
-    }
+    if(DB.ready){ DB.setMeta(ownerPass, 'activity', ACTIVITY).catch(() => {}); }
+    else saveJSON(LS_ACT, ACTIVITY);
     buildAppLog();
   }
 
@@ -148,18 +138,7 @@
       (meta || []).forEach(m => {
         if(m.key === 'hidden_cats' && Array.isArray(m.value)) HIDDEN_CATS = m.value;
         if(m.key === 'cat_icons' && m.value && typeof m.value === 'object') CUSTOM_GLYPHS = m.value;
-        if(m.key === 'activity' && Array.isArray(m.value)) {
-          // Merge the shared feed with this browser's backup. Keep every
-          // distinct action, including deletes, edits, stars and tag changes.
-          const merged = [...m.value, ...ACTIVITY];
-          const seen = new Set();
-          ACTIVITY = merged.filter(ev => {
-            const key = [ev.t, ev.act, ev.name, ev.cat, ev.from || ''].join('|');
-            if(seen.has(key)) return false;
-            seen.add(key);
-            return true;
-          }).sort((a, b) => (a.t || '') < (b.t || '') ? 1 : -1).slice(0, 100);
-        }
+        if(m.key === 'activity' && Array.isArray(m.value)) ACTIVITY = m.value;
       });
       rebuildData();
       renderGrid();
@@ -1480,11 +1459,9 @@
      Newest first, grouped by month, using each app's added date. */
   function buildAppLog(){
     const appsPane = $('#changelog-apps');
-    const sitePane = $('#changelog-website');
 
-    // Apply dynamic fade to both changelog sections
+    // Apply dynamic fade to the apps changelog section
     if(appsPane) setupDynamicFade(appsPane);
-    if(sitePane) setupDynamicFade(sitePane);
 
     // Merge the live activity feed with an "added" event per app (covers
     // apps published before activity logging existed). Deduplicate adds.
@@ -1502,9 +1479,6 @@
     events.sort((a, b) => (a.t || '') < (b.t || '') ? 1 : -1);
 
     if(!events.length){
-      // The Website pane is static content from index.html. Do not replace it
-      // with the Apps empty state: a missing/empty activity feed should only
-      // affect the live Apps pane.
       if (appsPane) appsPane.innerHTML = '<p class="log-empty">No activity yet.</p>';
       return;
     }
@@ -1537,6 +1511,8 @@
             <li class="log-act log-act-${esc(ev.act)}"><strong>${esc(ev.name)}</strong> ${(VERB[ev.act] || VERB.edited)(ev)}${day ? ` <span class="log-day">· ${esc(day)}</span>` : ''}</li>`).join('')}
         </ul>
       </div>`).join('');
+
+    if(appsPane) appsPane.innerHTML = html;
   }
 
   function buildPaletteApps(){
