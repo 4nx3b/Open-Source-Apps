@@ -519,15 +519,42 @@
     }
   }
 
-  /* Scroll the popup list to a specific app card and flash it */
+  /* Scroll the popup list to a specific app card and flash it - FIXED */
   function scrollToApp(name){
-    setTimeout(() => {
-      const card = $$('.cat-app', listEl).find(c => c.dataset.name === name);
-      if(!card) return;
-      card.scrollIntoView({ behavior:'smooth', block:'center' });
-      card.classList.add('located');
-      setTimeout(() => card.classList.remove('located'), 2200);
-    }, 380); // wait for the popup + card entrance animations
+    let tries = 0;
+    function attempt(){
+      const card = listEl ? listEl.querySelector(`[data-name="${CSS.escape ? CSS.escape(name) : name.replace(/"/g,'\"')}"]`) : null;
+      const target = card || ($$ && $$('.cat-app', listEl).find(c => c.dataset.name === name));
+      if(!target){
+        if(tries < 12){
+          tries++;
+          setTimeout(attempt, 120);
+        }
+        return;
+      }
+      // Use rAF to ensure layout is stable after entrance anim
+      requestAnimationFrame(()=>{
+        requestAnimationFrame(()=>{
+          try{
+            const cRect = target.getBoundingClientRect();
+            const lRect = listEl.getBoundingClientRect();
+            // calculate offset to center card in container
+            const offset = target.offsetTop - (listEl.clientHeight/2 - target.clientHeight/2);
+            // Clamp offset
+            const maxScroll = listEl.scrollHeight - listEl.clientHeight;
+            const clamped = Math.max(0, Math.min(offset, maxScroll));
+            listEl.scrollTo({ top: clamped, behavior: 'smooth' });
+          }catch(e){
+            // fallback to scrollIntoView if calculation fails
+            try{ target.scrollIntoView({ behavior:'smooth', block:'center' }); }catch(_){}
+          }
+          target.classList.add('located');
+          setTimeout(()=> target.classList.remove('located'), 2400);
+        });
+      });
+    }
+    // Wait for popup + card entrance (was 380, now 520 + retries)
+    setTimeout(attempt, 520);
   }
 
   // deep link: #app=Name opens that app's category popup on load

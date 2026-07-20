@@ -227,16 +227,55 @@
     }, { passive: true });
   }
 
-  // ===== 13. SEARCH BAR EXPAND =====
+  // ===== 13. SEARCH BAR EXPAND + Keyboard glitch fix =====
   const paletteInput = $('#palette-input');
   if (paletteInput) {
     const originalWidth = paletteInput.parentElement.style.width || 'auto';
     paletteInput.addEventListener('focus', () => {
-      paletteInput.parentElement.style.width = '280px';
+      // Prevent iOS zoom + keep visible when keyboard opens
+      if (window.matchMedia('(max-width: 640px)').matches) {
+        // Don't expand width on mobile - causes cut off
+      } else {
+        paletteInput.parentElement.style.width = '280px';
+      }
+      // Scroll palette into view after keyboard appears
+      setTimeout(()=>{
+        try{
+          const overlay = $('#palette-overlay');
+          const palette = overlay ? overlay.querySelector('.palette') : null;
+          if (palette) {
+            palette.scrollIntoView({ block: 'center', behavior: 'smooth' });
+          }
+          // Use visualViewport if available to adjust
+          if (window.visualViewport) {
+            const vv = window.visualViewport;
+            const overlayEl = $('#palette-overlay');
+            if (overlayEl) {
+              overlayEl.style.paddingBottom = `${Math.max(0, window.innerHeight - vv.height - vv.offsetTop)}px`;
+            }
+          }
+        }catch(e){}
+      }, 350);
     });
     paletteInput.addEventListener('blur', () => {
       paletteInput.parentElement.style.width = originalWidth;
+      const overlayEl = $('#palette-overlay');
+      if (overlayEl) overlayEl.style.paddingBottom = '';
     });
+
+    // Handle visual viewport resize (keyboard open/close)
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', ()=>{
+        const overlay = $('#palette-overlay');
+        if (!overlay || !overlay.classList.contains('open')) return;
+        if (document.activeElement === paletteInput) {
+          // Keep input visible
+          setTimeout(()=>{
+            paletteInput.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+          }, 50);
+        }
+      });
+    }
   }
 
   // ===== 14. CHANGELOG MODAL =====
