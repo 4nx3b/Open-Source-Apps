@@ -309,132 +309,117 @@
     });
   }
 
-  // ===== 15. TAP SOUNDS & CROSSHAIR FOR TOUCH DEVICES =====
-  let tapAudioContext = null;
+
+  // ===== 15. TAP SOUNDS & CROSS × HIT - FIXED =====
+  let audioCtx = null;
   let audioUnlocked = false;
-  let audioInitialized = false;
-  let lastTapTime = 0;
-  const TAP_DEBOUNCE = 100;
 
-  // Create crosshair element for all devices
-  const crosshair = document.createElement('div');
-  crosshair.id = 'touch-crosshair';
-  document.body.appendChild(crosshair);
-
-  // Create audio element as fallback
-  const tapAudio = document.createElement('audio');
-  tapAudio.id = 'tap-sound';
-  tapAudio.src = 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2teleQAA';
-  tapAudio.volume = 0.5;
-  document.body.appendChild(tapAudio);
-
-  function showCrosshair(x, y) {
-    const c = $('#touch-crosshair');
-    if (!c) return;
-    c.style.left = x + 'px';
-    c.style.top = y + 'px';
-    c.classList.add('active');
-    setTimeout(() => {
-      c.classList.remove('active');
-    }, 150);
+  function getAudioCtx() {
+    if (!audioCtx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return null;
+      audioCtx = new AC();
+    }
+    return audioCtx;
   }
 
-  function unlockAudio() {
+  async function unlockAudio() {
     if (audioUnlocked) return;
-    audioUnlocked = true;
-    audioInitialized = true;
+    const ctx = getAudioCtx();
+    if (!ctx) return;
     try {
-      tapAudioContext = new (window.AudioContext || window.webkitAudioContext)();
-      const buffer = tapAudioContext.createBuffer(1, 1, 22050);
-      const source = tapAudioContext.createBufferSource();
-      source.buffer = buffer;
-      source.connect(tapAudioContext.destination);
-      source.start(0);
-    } catch (e) {
-      console.log('Web Audio not available, using audio element');
-    }
+      if (ctx.state === 'suspended') await ctx.resume();
+      audioUnlocked = true;
+      const buf = ctx.createBuffer(1,1,22050);
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      src.connect(ctx.destination);
+      src.start(0);
+      src.stop(0.01);
+    } catch(e){ console.warn('Audio unlock failed', e); }
   }
 
-  function playTapSound() {
-    const now = Date.now();
-    if (now - lastTapTime < TAP_DEBOUNCE) return;
-    lastTapTime = now;
-
-    // Try audio element first (more reliable on mobile)
+  function playTapSound(type='click'){
+    const ctx = getAudioCtx();
+    if (!ctx) return;
+    if (ctx.state === 'suspended') ctx.resume().catch(()=>{});
+    if (navigator.vibrate) {
+      if (type==='pill') navigator.vibrate(10);
+      else navigator.vibrate(6);
+    }
     try {
-      const audioEl = $('#tap-sound');
-      if (audioEl) {
-        audioEl.currentTime = 0;
-        audioEl.play().catch(() => {});
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const filter = ctx.createBiquadFilter();
+      if (type==='pill'){
+        osc.type='sine';
+        osc.frequency.setValueAtTime(1200, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(400, ctx.currentTime+0.09);
+        gain.gain.setValueAtTime(0.32, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime+0.09);
+        filter.type='highpass'; filter.frequency.value=200;
+      } else {
+        osc.type='triangle';
+        osc.frequency.setValueAtTime(900, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(200, ctx.currentTime+0.07);
+        gain.gain.setValueAtTime(0.22, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime+0.07);
       }
-    } catch (e) {}
-
-    // Also try Web Audio API
-    if (!audioUnlocked) {
-      unlockAudio();
-    }
-
-    if (!audioUnlocked || !tapAudioContext) {
-      setTimeout(() => {
-        const audioEl = $('#tap-sound');
-        if (audioEl) {
-          audioEl.currentTime = 0;
-          audioEl.play().catch(() => {});
-        }
-      }, 30);
-      return;
-    }
-
-    try {
-      const oscillator = tapAudioContext.createOscillator();
-      const gainNode = tapAudioContext.createGain();
-
-      oscillator.type = 'sine';
-      oscillator.frequency.value = 1000;
-      
-      oscillator.connect(gainNode);
-      gainNode.connect(tapAudioContext.destination);
-
-      gainNode.gain.value = 0.3;
-
-      oscillator.start();
-      oscillator.stop(tapAudioContext.currentTime + 0.05);
-      
-      gainNode.gain.exponentialRampToValueAtTime(0.0001, tapAudioContext.currentTime + 0.05);
-    } catch (e) {
-      console.log('Web Audio error, trying audio element');
-      const audioEl = $('#tap-sound');
-      if (audioEl) {
-        audioEl.currentTime = 0;
-        audioEl.play().catch(() => {});
-      }
-    }
+      osc.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
+      osc.start(); osc.stop(ctx.currentTime+0.1);
+    } catch(e){ console.warn('playTap failed', e); }
   }
 
-  function handleTap(e) {
-    const now = Date.now();
-    if (now - lastTapTime < TAP_DEBOUNCE) return;
-    lastTapTime = now;
-
-    const x = e.touches ? e.touches[0].clientX : e.clientX;
-    const y = e.touches ? e.touches[0].clientY : e.clientY;
-
-    const interactive = 'button, a, [data-cursor], .cat-pill, .feature-card, .download-card, .cat-app, .dock a, .dock button, .modal-close, .changelog-tab, .palette-trigger, .icon-btn, .admin-menu-item, .btn, .btn-primary, .btn-outline, .brand, .footer-col a';
-    const target = e.target.closest(interactive);
-    
-    if (target) {
-      playTapSound();
-      showCrosshair(x, y);
-    }
+  // Crosshair DOM - fixed × shape
+  let crossEl = document.getElementById('touch-crosshair');
+  if (!crossEl){
+    crossEl = document.createElement('div');
+    crossEl.id='touch-crosshair';
+    crossEl.innerHTML='<div class="ch-cross"></div><div class="ch-dot"></div><div class="ch-ring"></div>';
+    document.body.appendChild(crossEl);
+  }
+  let crossTimer=null;
+  function showCrosshair(x,y,variant=''){
+    if (reduced) return;
+    crossEl.style.left=x+'px'; crossEl.style.top=y+'px';
+    crossEl.className=''; if(variant) crossEl.classList.add(variant);
+    void crossEl.offsetWidth;
+    crossEl.classList.add('active');
+    clearTimeout(crossTimer);
+    crossTimer=setTimeout(()=>{ crossEl.classList.remove('active'); }, 520);
   }
 
-  // Unlock audio on first interaction
-  document.addEventListener('touchstart', unlockAudio, { once: true, passive: true });
-  document.addEventListener('mousedown', unlockAudio, { once: true, passive: true });
+  const interactiveSel='button, a, [data-cursor], .cat-pill, .feature-card, .download-card, .cat-app, .dock a, .dock button, .modal-close, .changelog-tab, .palette-trigger, .icon-btn, .admin-menu-item, .btn, .btn-primary, .btn-outline, .brand, .footer-col a';
 
-  // Handle taps
-  document.addEventListener('touchstart', handleTap, { passive: true });
-  document.addEventListener('mousedown', handleTap, { passive: true });
+  function handleInteraction(e){
+    const t=e.target.closest(interactiveSel);
+    if(!t) return;
+    const x=e.touches?e.touches[0].clientX:e.clientX;
+    const y=e.touches?e.touches[0].clientY:e.clientY;
+    const isPill=t.classList.contains('cat-pill');
+    const isBtn=t.classList.contains('btn')||t.classList.contains('btn-primary');
+    playTapSound(isPill?'pill':isBtn?'btn':'click');
+    showCrosshair(x,y,isPill?'is-pill':isBtn?'is-btn':'');
+  }
+
+  // unlock
+  ['touchstart','touchend','mousedown','keydown'].forEach(ev=>{
+    document.addEventListener(ev, unlockAudio, {once:true, passive:true});
+  });
+  document.addEventListener('touchstart', handleInteraction, {passive:true});
+  document.addEventListener('mousedown', handleInteraction, {passive:true});
+
+  // pill glow follow
+  document.addEventListener('mousemove', (e)=>{
+    $$('.cat-pill').forEach(pill=>{
+      const r=pill.getBoundingClientRect();
+      const mx=((e.clientX-r.left)/r.width)*100;
+      const my=((e.clientY-r.top)/r.height)*100;
+      pill.style.setProperty('--mx', mx+'%');
+      pill.style.setProperty('--my', my+'%');
+    });
+  }, {passive:true});
+
 
   // ===== INITIALIZATION =====
   if (document.readyState === 'loading') {
@@ -449,5 +434,5 @@
   }
 
   // Export for external use
-  window.OpenHouseEnhanced = { showToast, init };
+  window.OpenHouseEnhanced = { showToast, init, playTapSound, showCrosshair, unlockAudio };
 })();
