@@ -350,7 +350,7 @@
     mcAudioEl = new Audio();
     mcAudioEl.src = 'sounds/minecraft_hit_soundmp3converter.mp3';
     mcAudioEl.preload = 'auto';
-    mcAudioEl.volume = 0.35;
+    mcAudioEl.volume = 0.18;
     mcAudioEl.addEventListener('canplaythrough', ()=>{ mcAudioReady=true; }, {once:true});
     mcAudioEl.load();
     const ctx = getAudioCtx();
@@ -375,7 +375,7 @@
         const src = ctx.createBufferSource();
         src.buffer = mcBuffer;
         const gain = ctx.createGain();
-        gain.gain.value = 0.32;
+        gain.gain.value = 0.16;
         src.connect(gain); gain.connect(ctx.destination);
         src.start(0);
         return;
@@ -386,7 +386,7 @@
     try{
       const audio = ensureMcAudio();
       const clone = audio.cloneNode();
-      clone.volume = 0.38;
+      clone.volume = 0.20;
       clone.currentTime = 0;
       clone.play().catch(()=>{
         audio.currentTime = 0;
@@ -406,7 +406,7 @@
       osc.type='square';
       osc.frequency.setValueAtTime(340, now);
       osc.frequency.exponentialRampToValueAtTime(82, now+0.19);
-      gain.gain.setValueAtTime(0.44, now);
+      gain.gain.setValueAtTime(0.18, now);
       gain.gain.exponentialRampToValueAtTime(0.001, now+0.26);
       osc.connect(filt); filt.connect(gain); gain.connect(ctx.destination);
       osc.start(now); osc.stop(now+0.28);

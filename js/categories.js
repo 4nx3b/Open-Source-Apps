@@ -33,7 +33,7 @@
   let ORDER = DEFAULT_ORDER.slice();
 
   const GLYPH = {
-    'Featured':'✦', 'Media':'♪', 'Productivity':'✓', 'Finance':'$', 'Dev Tools':'◧',
+    'Featured':'✨', 'Media':'♪', 'Productivity':'✓', 'Finance':'$', 'Dev Tools':'◧',
     'Notes':'✎', 'Utilities':'⚙', 'Communication':'✉', 'Design':'◑',
     'Security':'🔒', 'Health':'♥', 'Tools':'🧰'
   };
@@ -172,7 +172,9 @@
       const featured = cat === 'Featured';
       const sub = featured ? `<span class="cat-sub">The best of the best handpicked apps will be shown here.</span>` : '';
       return `<button class="cat-pill${featured ? ' cat-pill-featured' : ''}" data-cat="${esc(cat)}" data-cursor="pointer" aria-label="Open ${esc(cat)} category" style="--i:${idx}">
-        <span class="cat-ico">${esc(glyphFor(cat))}</span>
+        ${cat === 'Featured' 
+        ? `<span class="cat-ico cat-ico-featured"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.5L13.8 8.2H19.7L14.9 11.7L16.7 17.5L12 14.2L7.3 17.5L9.1 11.7L4.3 8.2H10.2L12 2.5Z" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linejoin="round"/><path d="M19 3.5L19.8 5.5L21.8 6.3L19.8 7.1L19 9.1L18.2 7.1L16.2 6.3L18.2 5.5L19 3.5Z" fill="currentColor"/><path d="M6 15.5L6.6 17L8.1 17.6L6.6 18.2L6 19.7L5.4 18.2L3.9 17.6L5.4 17L6 15.5Z" fill="currentColor"/></svg></span>`
+        : `<span class="cat-ico">${esc(glyphFor(cat))}</span>`}
         <span class="cat-pill-body"><span class="cat-name">${esc(cat)}</span>${sub}</span>
         <span class="cat-count">${n}</span>
         ${acts}
