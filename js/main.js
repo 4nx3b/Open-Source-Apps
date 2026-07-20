@@ -225,13 +225,14 @@ const dockLinks = $$('.dock a[href^="#"]');
       if(target) hrefFor.set(target, href);
     });
     const dockIo = new IntersectionObserver((entries) => {
+      if (dockClickLock) return; // don't fight the click
       entries.forEach(entry => {
         if(!entry.isIntersecting) return;
         const href = hrefFor.get(entry.target);
         dockLinks.forEach(a => {
           const isActive = a.getAttribute('href') === href;
           a.classList.toggle('active', isActive);
-          if(isActive){
+          if(isActive && !dockClickLock){
             moveDockIndicator(a);
           }
         });
@@ -247,11 +248,17 @@ const dockLinks = $$('.dock a[href^="#"]');
       if(active) moveDockIndicator(active);
     }, {passive:true});
   }
-  dockLinks.forEach(link=>{
-    link.addEventListener('click', ()=>{
-      dockLinks.forEach(a=>a.classList.remove('active'));
+  let dockClickLock = false;
+
+  dockLinks.forEach(link => {
+    link.addEventListener('click', () => {
+      dockClickLock = true;
+      dockLinks.forEach(a => a.classList.remove('active'));
       link.classList.add('active');
       moveDockIndicator(link);
+
+      // Stronger lock to prevent observer from moving indicator
+      setTimeout(() => { dockClickLock = false; }, 900);
     });
   });
 

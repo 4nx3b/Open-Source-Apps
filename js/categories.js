@@ -1456,11 +1456,12 @@
   /* ---------------- CHANGELOG: APPS PANE ----------------
      Newest first, grouped by month, using each app's added date. */
   function buildAppLog(){
-    const pane = $('#changelog-apps');
-    if(!pane) return;
+    const appsPane = $('#changelog-apps');
+    const sitePane = $('#changelog-website');
 
-    // Apply the exact same dynamic fade logic to changelog
-    setupDynamicFade(pane);
+    // Apply dynamic fade to both changelog sections
+    if(appsPane) setupDynamicFade(appsPane);
+    if(sitePane) setupDynamicFade(sitePane);
 
     // Merge the live activity feed with an "added" event per app (covers
     // apps published before activity logging existed). Deduplicate adds.
