@@ -1262,3 +1262,123 @@ a {
   border-color: rgba(255,255,255,0.08) !important;
   transform: translateX(2px) !important;
 }
+
+/* ============================================================
+   ENHANCED MICRO-ANIMATIONS AND HOVER EFFECTS (POLISH)
+   ============================================================ */
+
+/* 1. Featured Icon Glow & Twinkling Animation */
+.cat-pill-featured .cat-ico {
+  animation: featIcoGlowPulse 2.8s ease-in-out infinite !important;
+}
+
+@keyframes featIcoGlowPulse {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(255, 180, 84, 0.45), inset 0 1px 0 rgba(255,255,255,0.25) !important;
+    transform: scale(1) rotate(0deg);
+  }
+  50% {
+    box-shadow: 0 0 22px rgba(255, 180, 84, 0.8), inset 0 1px 0 rgba(255,255,255,0.4) !important;
+    transform: scale(1.05) rotate(3deg);
+  }
+}
+
+/* Twinkling/animating featured icon sparkles */
+.cat-ico-featured svg path {
+  transform-box: fill-box;
+}
+.cat-ico-featured svg path:nth-child(1) {
+  animation: mainStarPulse 3s ease-in-out infinite;
+  transform-origin: center;
+}
+.cat-ico-featured svg path:nth-child(2) {
+  animation: sparkleTwinkleOne 2s ease-in-out infinite;
+  transform-origin: center;
+}
+.cat-ico-featured svg path:nth-child(3) {
+  animation: sparkleTwinkleTwo 2s ease-in-out infinite 1s; /* offset by 1s */
+  transform-origin: center;
+}
+
+@keyframes mainStarPulse {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+  }
+  50% {
+    transform: scale(1.08) rotate(-4deg);
+  }
+}
+
+@keyframes sparkleTwinkleOne {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(0.3) rotate(45deg);
+    opacity: 0.15;
+  }
+}
+
+@keyframes sparkleTwinkleTwo {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(0.3) rotate(-45deg);
+    opacity: 0.15;
+  }
+}
+
+/* 2. Floating/pulsing Back-to-Top Button */
+.back-to-top {
+  animation: backToTopFloat 3s ease-in-out infinite !important;
+}
+@keyframes backToTopFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+/* 3. Shortcuts Button Rotation & Glow on Hover */
+#shortcuts-trigger {
+  transition: transform 0.3s cubic-bezier(.22, 1.3, .36, 1), border-color 0.3s ease, color 0.3s ease !important;
+}
+#shortcuts-trigger:hover {
+  transform: rotate(360deg) scale(1.1) !important;
+  border-color: var(--accent) !important;
+  color: var(--accent) !important;
+}
+
+/* 4. Enhanced Lift and Glow for Feature Cards & Submit Card */
+.feature-card, .download-card {
+  transition: transform 0.4s cubic-bezier(.22, 1.3, .36, 1), border-color 0.3s ease, box-shadow 0.3s ease !important;
+}
+.feature-card:hover {
+  transform: translateY(-6px) scale(1.015) !important;
+  border-color: rgba(255, 180, 84, 0.45) !important;
+  box-shadow: 0 16px 36px -12px rgba(255, 180, 84, 0.15) !important;
+}
+.download-card:hover {
+  transform: scale(1.005) !important;
+  border-color: rgba(255, 180, 84, 0.45) !important;
+  box-shadow: 0 20px 48px -15px rgba(255, 180, 84, 0.22) !important;
+}
+
+/* 5. Pulsing Search Trigger Pill in Header */
+.palette-trigger {
+  animation: searchPillBreathing 4s ease-in-out infinite;
+}
+@keyframes searchPillBreathing {
+  0%, 100% {
+    box-shadow: 0 0 0px transparent;
+  }
+  50% {
+    box-shadow: 0 0 12px rgba(255, 180, 84, 0.15);
+    border-color: rgba(255, 180, 84, 0.25);
+  }
+}
