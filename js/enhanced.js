@@ -348,14 +348,14 @@
   function ensureMcAudio(){
     if (mcAudioEl) return mcAudioEl;
     mcAudioEl = new Audio();
-    mcAudioEl.src = 'sounds/minecraft-hit.ogg';
+    mcAudioEl.src = 'sounds/minecraft_hit_soundmp3converter.mp3';
     mcAudioEl.preload = 'auto';
-    mcAudioEl.volume = 0.75;
+    mcAudioEl.volume = 0.35;
     mcAudioEl.addEventListener('canplaythrough', ()=>{ mcAudioReady=true; }, {once:true});
     mcAudioEl.load();
     const ctx = getAudioCtx();
     if (ctx){
-      fetch('sounds/minecraft-hit.ogg')
+      fetch('sounds/minecraft_hit_soundmp3converter.mp3')
         .then(r=>r.arrayBuffer())
         .then(buf=>ctx.decodeAudioData(buf))
         .then(decoded=>{ mcBuffer=decoded; })
@@ -375,7 +375,7 @@
         const src = ctx.createBufferSource();
         src.buffer = mcBuffer;
         const gain = ctx.createGain();
-        gain.gain.value = 0.72;
+        gain.gain.value = 0.32;
         src.connect(gain); gain.connect(ctx.destination);
         src.start(0);
         return;
@@ -386,7 +386,7 @@
     try{
       const audio = ensureMcAudio();
       const clone = audio.cloneNode();
-      clone.volume = 0.75;
+      clone.volume = 0.38;
       clone.currentTime = 0;
       clone.play().catch(()=>{
         audio.currentTime = 0;
