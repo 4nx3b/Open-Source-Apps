@@ -440,6 +440,20 @@ kbd{
 /* ================= OWNER / ADMIN ================= */
 /* lock background interaction whenever any modal/popup is open */
 body.modal-open{ pointer-events:none; overflow:hidden; }
+
+/* Desktop-only: lock background scroll when category modal is open */
+@media (hover:hover) {
+  body.modal-open .cat-overlay.open ~ main,
+  body.modal-open #cat-overlay.open ~ main {
+    overflow: hidden;
+  }
+  #cat-overlay.open {
+    overflow: hidden;
+  }
+  #cat-overlay.open .cat-modal {
+    overflow: hidden;
+  }
+}
 .modal-overlay{ pointer-events:auto; }
 .toast-stack{ z-index:210; }
 
@@ -1267,6 +1281,15 @@ body.loaded .hero .eyebrow{ animation:rowIn .8s var(--ease) .3s both; }
   background:linear-gradient(135deg, rgba(255,180,84,.12), rgba(255,180,84,.035) 55%, rgba(255,255,255,.03));
   border:1px solid rgba(255,180,84,.4);
   position:relative; overflow:hidden;
+}
+
+/* Desktop only: center the Featured pill */
+@media (hover:hover) {
+  .cat-pill-featured {
+    flex-basis: auto;
+    margin: 0 auto;
+    max-width: 460px;
+  }
 }
 .cat-pill-featured::before{
   content:''; position:absolute; top:0; bottom:0; left:-60%; width:60%;
