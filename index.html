@@ -198,7 +198,7 @@
     <div class="footer-col">
       <h4>Project</h4>
       <a href="https://github.com" target="_blank" rel="noopener">GitHub</a>
-      <a href="#" id="changelog-link">Changelog</a>
+      <a href="#" id="changelog-link" data-cursor="pointer">Changelog</a>
     </div>
   </div>
   <div class="footer-bottom">
@@ -337,6 +337,17 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="changelog-overlay">
+  <div class="modal changelog-modal" role="dialog" aria-modal="true" aria-label="Changelog">
+    <button class="modal-close" id="changelog-close" data-cursor="pointer" aria-label="Close">✕</button>
+    <span class="modal-eyebrow">Changelog</span>
+    <h3>What's new</h3>
+    <div class="changelog-content" id="changelog-content">
+      <p>Loading changelog...</p>
+    </div>
+  </div>
+</div>
+
 <div class="toast-stack" id="toast-stack"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
@@ -355,5 +366,5 @@ if('serviceWorker' in navigator){
   });
 }
 </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1df42f5ccef3501',t:'MTc4NDUyMjE1MQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
