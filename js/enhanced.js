@@ -166,6 +166,7 @@
 
       // Mobile touch tilt
       const startTilt = (e) => {
+        if (isScrolling) return;
         rect = card.getBoundingClientRect();
         card.classList.add('tilting');
         applyTilt(e.touches[0].clientX, e.touches[0].clientY);
@@ -173,7 +174,7 @@
 
       card.addEventListener('touchstart', startTilt, { passive: true });
       card.addEventListener('touchmove', (e) => {
-        if (raf) cancelAnimationFrame(raf);
+        if (raf || isScrolling) return;
         raf = requestAnimationFrame(() => applyTilt(e.touches[0].clientX, e.touches[0].clientY));
       }, { passive: true });
 
@@ -514,8 +515,11 @@
     document.body.appendChild(crossEl);
   }
   let crossTimer=null;
+  let isScrolling = false;
+  let scrollTimeout = null;
+
   function showCrosshair(x,y,variant=''){
-    if (reduced) return;
+    if (reduced || isScrolling) return;
     crossEl.style.left=x+'px'; crossEl.style.top=y+'px';
     crossEl.className=''; if(variant) crossEl.classList.add(variant);
     void crossEl.offsetWidth;
@@ -524,7 +528,16 @@
     crossTimer=setTimeout(()=>{ crossEl.classList.remove('active'); }, 520);
   }
 
-  const interactiveSel='button, a, [data-cursor], .cat-pill, .feature-card, .download-card, .cat-app, .dock a, .dock button, .modal-close, .changelog-tab, .palette-trigger, .icon-btn, .admin-menu-item, .btn, .btn-primary, .btn-outline, .brand, .footer-col a';
+  // Detect active scrolling
+  window.addEventListener('scroll', () => {
+    isScrolling = true;
+    clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(() => {
+      isScrolling = false;
+    }, 180);
+  }, { passive: true });
+
+  const interactiveSel='button, a, [data-cursor], .cat-pill, .feature-card, .download-card, .cat-app, .modal-close, .changelog-tab, .palette-trigger, .icon-btn, .admin-menu-item, .btn, .btn-primary, .btn-outline, .brand, .footer-col a';
   // Only these should play the Minecraft damage sound
   const SOUND_ALLOWED_SEL='.modal-close, #welcome-dismiss, #upload-form button[type="submit"], #login-form button[type="submit"], #icon-form button[type="submit"], #tags-form button[type="submit"], #confirm-ok, #upload-cancel, #confirm-cancel, #tags-cancel, #icon-close, #icon-reset';
   let lastTouchTs = 0;
