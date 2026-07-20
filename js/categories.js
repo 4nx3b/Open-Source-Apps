@@ -97,8 +97,18 @@
   function logActivity(act, name, cat, extra){
     ACTIVITY.unshift(Object.assign({ t: new Date().toISOString(), act, name, cat }, extra || {}));
     if(ACTIVITY.length > 100) ACTIVITY.length = 100;
-    if(DB.ready){ DB.setMeta(ownerPass, 'activity', ACTIVITY).catch(() => {}); }
-    else saveJSON(LS_ACT, ACTIVITY);
+
+    // Always keep a local backup. This prevents the feed disappearing when
+    // the database is temporarily unavailable, and is also useful when an
+    // older deployment did not persist activity correctly.
+    saveJSON(LS_ACT, ACTIVITY);
+
+    // The shared database remains the source for visitors on other devices.
+    if(DB.ready){
+      DB.setMeta(ownerPass, 'activity', ACTIVITY).catch(e =>
+        console.warn('Could not save changelog activity:', e)
+      );
+    }
     buildAppLog();
   }
 
@@ -138,7 +148,18 @@
       (meta || []).forEach(m => {
         if(m.key === 'hidden_cats' && Array.isArray(m.value)) HIDDEN_CATS = m.value;
         if(m.key === 'cat_icons' && m.value && typeof m.value === 'object') CUSTOM_GLYPHS = m.value;
-        if(m.key === 'activity' && Array.isArray(m.value)) ACTIVITY = m.value;
+        if(m.key === 'activity' && Array.isArray(m.value)) {
+          // Merge the shared feed with this browser's backup. Keep every
+          // distinct action, including deletes, edits, stars and tag changes.
+          const merged = [...m.value, ...ACTIVITY];
+          const seen = new Set();
+          ACTIVITY = merged.filter(ev => {
+            const key = [ev.t, ev.act, ev.name, ev.cat, ev.from || ''].join('|');
+            if(seen.has(key)) return false;
+            seen.add(key);
+            return true;
+          }).sort((a, b) => (a.t || '') < (b.t || '') ? 1 : -1).slice(0, 100);
+        }
       });
       rebuildData();
       renderGrid();
