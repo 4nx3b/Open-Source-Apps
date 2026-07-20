@@ -657,21 +657,88 @@ a {
 }
 
 /* ============================================================
-   18. REDUCED MOTION SUPPORT
+   19. TOUCH INTERACTIONS
    ============================================================ */
 
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.001ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
+/* Touch-specific active states for better feedback */
+@media (hover: none) {
+  /* Buttons - scale down on tap */
+  .btn,
+  .btn-primary,
+  .btn-outline,
+  [data-magnetic],
+  .cat-pill,
+  .palette-trigger,
+  .icon-btn {
+    transition: transform 0.15s cubic-bezier(.22, 1.3, .36, 1),
+                background 0.15s ease,
+                border-color 0.15s ease;
   }
-  
-  .modal-overlay,
-  .modal,
-  .toast {
-    transition: opacity 0.2s ease, visibility 0.2s ease;
+
+  .btn:active,
+  .btn-primary:active,
+  .btn-outline:active,
+  [data-magnetic]:active,
+  .cat-pill:active,
+  .palette-trigger:active,
+  .icon-btn:active {
+    transform: scale(0.96) !important;
+  }
+
+  /* Cards - subtle press effect */
+  .feature-card:active,
+  .download-card:active,
+  .cat-app:active {
+    transform: scale(0.98) !important;
+    filter: brightness(0.95);
+  }
+
+  /* Dock icons - bounce on tap */
+  .dock a:active,
+  .dock button:active {
+    transform: scale(0.9) !important;
+  }
+
+  /* Modal close buttons */
+  .modal-close:active {
+    transform: scale(0.9) !important;
+  }
+
+  /* Footer links */
+  .footer-col a:active {
+    transform: scale(0.98);
+    color: var(--accent) !important;
+  }
+
+  /* Topbar brand */
+  .brand:active {
+    transform: scale(0.98);
+  }
+
+  /* Touch ripple effect for buttons */
+  .btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+
+  .btn:active::after {
+    opacity: 1;
+  }
+
+  .btn-primary:active::after {
+    background: radial-gradient(circle, rgba(255,255,255,0.4) 0%, transparent 70%);
+  }
+}
+
+/* Touch-specific cursor styles */
+@media (hover: none) {
+  [data-cursor="pointer"] {
+    cursor: pointer;
   }
 }
