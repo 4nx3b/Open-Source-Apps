@@ -892,3 +892,84 @@ a {
 .cat-pill-featured .cat-ico{width:44px !important;height:44px !important;min-width:44px !important;border-radius:12px !important;background:var(--accent) !important;border:1px solid rgba(255,180,84,0.4) !important;color:#0a0a0a !important;font-size:20px !important}
 .cat-pill-featured .cat-name{font-size:16px !important;font-weight:700 !important;color:var(--accent) !important;-webkit-line-clamp:1 !important}
 .cat-pill-featured .cat-count{background:var(--accent) !important;color:#0a0a0a !important;border-color:var(--accent) !important;font-weight:700 !important}
+
+
+/* ========== FIX 1: Search box glitch when keyboard open ========== */
+.palette-input-row input{
+  min-width: 0;
+  flex: 1;
+}
+@media (max-width: 640px){
+  .palette-overlay{
+    align-items: flex-start !important;
+    padding: 12px 12px calc(12px + env(safe-area-inset-bottom, 0px)) !important;
+    padding-top: max(12px, 4dvh) !important;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .palette{
+    width: 92vw !important;
+    max-width: none !important;
+    max-height: calc(100dvh - 24px) !important;
+    max-height: calc(100vh - 24px) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    margin: 0 auto !important;
+  }
+  .palette-input-row{
+    padding: 14px 14px !important;
+    gap: 10px !important;
+    flex-shrink: 0 !important;
+  }
+  .palette-input-row input{
+    font-size: 16px !important; /* prevent iOS zoom that cuts off */
+    min-width: 0 !important;
+  }
+  .palette-input-row kbd{
+    flex-shrink: 0 !important;
+  }
+  .palette-results{
+    max-height: none !important;
+    flex: 1 !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none;
+  }
+  .palette-results::-webkit-scrollbar{ display:none; }
+}
+
+/* ========== FIX 2 & 3: Auto-scroll + located flash blink ========== */
+.cat-app{
+  /* ensure base animation doesn't restart on located removal */
+  animation: catCardIn .55s cubic-bezier(.22,1.2,.36,1) both;
+  will-change: transform, opacity;
+}
+.cat-app.located{
+  border-color: var(--accent) !important;
+  /* No animation overriding catCardIn - only box-shadow flash */
+  animation: none !important;
+  /* use separate flash via box-shadow transition */
+  box-shadow: 0 0 0 3px rgba(255,180,84,0.55), 0 0 32px rgba(255,180,84,0.28) !important;
+  transform: scale(1.02) !important;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease !important;
+  z-index: 2;
+}
+.cat-app.located::after{
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border: 2px solid var(--accent);
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  animation: locatedBorderFlash 2.2s var(--ease) forwards;
+}
+@keyframes locatedBorderFlash{
+  0%{ opacity: 1; transform: scale(1.03); box-shadow: 0 0 0 4px rgba(255,180,84,0.5); }
+  40%{ opacity: 0.8; transform: scale(1); }
+  100%{ opacity: 0; transform: scale(1); }
+}
+@keyframes locatedFlash{
+  0%{ box-shadow:0 0 0 3px rgba(255,180,84,.55), 0 0 34px rgba(255,180,84,.3); }
+  100%{ box-shadow:0 0 0 2px rgba(255,180,84,.2), 0 0 16px rgba(255,180,84,.1); }
+}
