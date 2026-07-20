@@ -390,22 +390,41 @@
   }
 
   const interactiveSel='button, a, [data-cursor], .cat-pill, .feature-card, .download-card, .cat-app, .dock a, .dock button, .modal-close, .changelog-tab, .palette-trigger, .icon-btn, .admin-menu-item, .btn, .btn-primary, .btn-outline, .brand, .footer-col a';
+  let lastTouchTs = 0;
+  let lastSoundTs = 0;
+  let pointerDownActive = false;
 
   function handleInteraction(e){
+    // Suppress mouse event that fires after touch (double sound bug)
+    if (e.type === 'touchstart') {
+      lastTouchTs = Date.now();
+    }
+    if (e.type === 'mousedown' && Date.now() - lastTouchTs < 450) {
+      return; // synthetic mouse after touch
+    }
+    // Debounce rapid triggers (Chrome sometimes fires touch+pointer)
+    if (Date.now() - lastSoundTs < 110) return;
+
     const t=e.target.closest(interactiveSel);
     if(!t) return;
+
     const x=e.touches?e.touches[0].clientX:e.clientX;
     const y=e.touches?e.touches[0].clientY:e.clientY;
+
     const isPill=t.classList.contains('cat-pill');
     const isBtn=t.classList.contains('btn')||t.classList.contains('btn-primary');
+
+    lastSoundTs = Date.now();
     playTapSound(isPill?'pill':isBtn?'btn':'click');
     showCrosshair(x,y,isPill?'is-pill':isBtn?'is-btn':'');
   }
 
   // unlock
-  ['touchstart','touchend','mousedown','keydown'].forEach(ev=>{
+  ['touchstart','touchend','mousedown','keydown','pointerdown'].forEach(ev=>{
     document.addEventListener(ev, unlockAudio, {once:true, passive:true});
   });
+  // Use pointerdown as primary (covers mouse+touch), keep touch/mouse as fallback but debounced
+  document.addEventListener('pointerdown', handleInteraction, {passive:true});
   document.addEventListener('touchstart', handleInteraction, {passive:true});
   document.addEventListener('mousedown', handleInteraction, {passive:true});
 
