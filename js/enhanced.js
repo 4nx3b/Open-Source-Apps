@@ -327,11 +327,10 @@
       if (!crosshair) return;
       crosshair.style.left = x + 'px';
       crosshair.style.top = y + 'px';
-      crosshair.style.opacity = '1';
-      crosshair.style.transform = 'translate(-50%, -50%) scale(1)';
+      crosshair.classList.add('active');
       setTimeout(() => {
-        crosshair.style.opacity = '0';
-      }, 100);
+        crosshair.classList.remove('active');
+      }, 150);
     }
 
     function unlockAudio() {
