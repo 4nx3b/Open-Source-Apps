@@ -119,7 +119,7 @@
     });
   }
 
-  // ===== 7. TILT CARDS (Why Openhouse - localized press lift) =====
+  // ===== 7. TILT CARDS (Why Openhouse - true 3D tilt on press) =====
   if (!reduced) {
     $$('.feature-card').forEach(card => {
       let rect = null;
@@ -131,33 +131,31 @@
         const px = (clientX - rect.left) / rect.width;
         const py = (clientY - rect.top) / rect.height;
 
-        // Localized tilt: stronger rotation when pressing near edges/corners
-        const rotY = (px - 0.5) * 18;           // horizontal tilt
-        const rotX = (0.5 - py) * 16;           // vertical tilt
+        // Real 3D tilt based on press position
+        const rotY = (px - 0.5) * 22;
+        const rotX = (0.5 - py) * 18;
 
-        // Extra lift/bury based on vertical position
-        const lift = (0.5 - py) * 22;           // positive = lift, negative = bury
+        // Lift/bury effect
+        const lift = (0.5 - py) * 18;
 
-        card.style.transition = 'transform 0.12s cubic-bezier(0.23, 1, 0.32, 1)';
-        card.style.transform = `
-          perspective(900px)
-          rotateX(${rotX}deg)
-          rotateY(${rotY}deg)
-          translateZ(${lift}px)
-        `;
+        card.style.transition = 'transform 80ms cubic-bezier(0.23, 1, 0.32, 1)';
+        card.style.transform = `perspective(900px) rotateX(${rotX}deg) rotateY(${rotY}deg) translateZ(${lift}px)`;
 
-        // Glow follows cursor
-        card.style.setProperty('--mx', (px * 100) + '%');
-        card.style.setProperty('--my', (py * 100) + '%');
+        // Only update glow during hover, not during active tilt
+        if (!card.classList.contains('tilting')) {
+          card.style.setProperty('--mx', (px * 100) + '%');
+          card.style.setProperty('--my', (py * 100) + '%');
+        }
       };
 
       const resetTilt = () => {
         if (raf) cancelAnimationFrame(raf);
-        card.style.transition = 'transform 0.35s cubic-bezier(0.23, 1, 0.32, 1)';
+        card.style.transition = 'transform 420ms cubic-bezier(0.23, 1, 0.32, 1)';
         card.style.transform = 'perspective(900px) rotateX(0deg) rotateY(0deg) translateZ(0)';
+        card.classList.remove('tilting');
       };
 
-      // Desktop mouse
+      // Desktop mouse tilt
       if (!isTouch) {
         card.addEventListener('mousemove', (e) => {
           if (raf) cancelAnimationFrame(raf);
@@ -166,12 +164,14 @@
         card.addEventListener('mouseleave', resetTilt);
       }
 
-      // Mobile touch support (localized tilt)
-      card.addEventListener('touchstart', (e) => {
+      // Mobile touch tilt
+      const startTilt = (e) => {
         rect = card.getBoundingClientRect();
+        card.classList.add('tilting');
         applyTilt(e.touches[0].clientX, e.touches[0].clientY);
-      }, { passive: true });
+      };
 
+      card.addEventListener('touchstart', startTilt, { passive: true });
       card.addEventListener('touchmove', (e) => {
         if (raf) cancelAnimationFrame(raf);
         raf = requestAnimationFrame(() => applyTilt(e.touches[0].clientX, e.touches[0].clientY));
