@@ -321,6 +321,68 @@
     });
   }
 
+  // ===== 15. TAP SOUNDS FOR TOUCH DEVICES =====
+  let tapAudioContext = null;
+  let tapOscillator = null;
+  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
+
+  function createTapSound() {
+    if (!isTouchDevice) return;
+    
+    try {
+      // Create audio context on first user interaction
+      if (!tapAudioContext) {
+        tapAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      
+      // Create a simple beep sound
+      if (tapOscillator) {
+        tapOscillator.stop();
+      }
+      
+      tapOscillator = tapAudioContext.createOscillator();
+      const gainNode = tapAudioContext.createGain();
+      
+      tapOscillator.type = 'sine';
+      tapOscillator.frequency.value = 800; // High-pitched beep
+      tapOscillator.connect(gainNode);
+      gainNode.connect(tapAudioContext.destination);
+      
+      // Short duration
+      gainNode.gain.setValueAtTime(0.1, tapAudioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, tapAudioContext.currentTime + 0.05);
+      
+      tapOscillator.start();
+      tapOscillator.stop(tapAudioContext.currentTime + 0.05);
+    } catch (e) {
+      console.log('Tap sound not supported:', e);
+    }
+  }
+
+  // Add tap sound to interactive elements on touch devices
+  if (isTouchDevice) {
+    const tapElements = $$('button, a, [data-cursor], .cat-pill, .feature-card, .download-card, .cat-app, .dock a, .dock button, .modal-close');
+    
+    tapElements.forEach(el => {
+      // Only add to elements that don't already have touch handlers
+      if (!el.hasAttribute('data-tap-sound')) {
+        el.setAttribute('data-tap-sound', 'true');
+        
+        el.addEventListener('touchstart', (e) => {
+          createTapSound();
+        }, { passive: true });
+      }
+    });
+    
+    // Also add to dynamically created elements
+    document.addEventListener('click', (e) => {
+      const target = e.target.closest('button, a, [data-cursor], .cat-pill, .feature-card, .download-card, .cat-app, .dock a, .dock button, .modal-close');
+      if (target && isTouchDevice) {
+        createTapSound();
+      }
+    });
+  }
+
   // ===== INITIALIZATION =====
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
@@ -331,8 +393,21 @@
   function init() {
     document.body.classList.add('enhanced-loaded');
     console.log('✨ OpenHouse Enhanced Features Loaded');
+    
+    // Initialize audio context on first user interaction for mobile
+    if (isTouchDevice) {
+      document.addEventListener('touchstart', () => {
+        if (!tapAudioContext) {
+          try {
+            tapAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+          } catch (e) {
+            console.log('Audio context not available');
+          }
+        }
+      }, { once: true, passive: true });
+    }
   }
 
   // Export for external use
-  window.OpenHouseEnhanced = { showToast, init };
+  window.OpenHouseEnhanced = { showToast, init, createTapSound };
 })();
