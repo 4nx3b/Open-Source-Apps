@@ -369,18 +369,20 @@
         const oscillator = tapAudioContext.createOscillator();
         const gainNode = tapAudioContext.createGain();
 
+        // Higher pitch for better audibility, with a quick drop
         oscillator.type = 'sine';
-        oscillator.frequency.setValueAtTime(800, tapAudioContext.currentTime);
+        oscillator.frequency.setValueAtTime(1200, tapAudioContext.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(800, tapAudioContext.currentTime + 0.04);
         
         oscillator.connect(gainNode);
         gainNode.connect(tapAudioContext.destination);
 
-        // Louder volume
-        gainNode.gain.setValueAtTime(0.15, tapAudioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.0001, tapAudioContext.currentTime + 0.05);
+        // Louder and punchier
+        gainNode.gain.setValueAtTime(0.2, tapAudioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.0001, tapAudioContext.currentTime + 0.04);
 
         oscillator.start();
-        oscillator.stop(tapAudioContext.currentTime + 0.05);
+        oscillator.stop(tapAudioContext.currentTime + 0.04);
       } catch (e) {
         console.log('Tap sound error:', e);
       }
