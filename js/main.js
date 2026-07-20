@@ -203,19 +203,18 @@
   });
 
   /* ============ DOCK: ACTIVE SECTION (filled icon) ============ */
-  const dockLinks = $$('.dock a[href^="#"]');
+const dockLinks = $$('.dock a[href^="#"]');
   const dockIndicator = $('#dock-indicator');
   const dockEl = $('#dock');
   function moveDockIndicator(activeLink){
     if(!dockIndicator || !dockEl || !activeLink) return;
-    const dockRect = dockEl.getBoundingClientRect();
-    const linkRect = activeLink.getBoundingClientRect();
-    const x = linkRect.left - dockRect.left;
-    const y = linkRect.top - dockRect.top;
-    // Center indicator on link
-    const offsetX = x + (linkRect.width - dockIndicator.offsetWidth)/2;
-    const offsetY = y + (linkRect.height - dockIndicator.offsetHeight)/2;
-    dockIndicator.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(1)`;
+    const links = Array.from(dockLinks);
+    const idx = links.indexOf(activeLink);
+    if(idx < 0) return;
+    // Each link 42px + gap 6px = 48px step, plus initial offset 0 (since left:10px already)
+    const step = 48; // 42 + 6 gap
+    dockIndicator.style.transform = `translateX(${idx * step}px)`;
+    dockIndicator.classList.add('show');
     dockIndicator.style.opacity = '1';
   }
   if(dockLinks.length && 'IntersectionObserver' in window){
@@ -239,19 +238,15 @@
       });
     }, { rootMargin: '-40% 0px -50% 0px' });
     hrefFor.forEach((href, sec) => dockIo.observe(sec));
-    // Initial position
     const initActive = dockLinks.find(a => a.classList.contains('active')) || dockLinks[0];
     if(initActive){
-      // wait for layout
-      setTimeout(()=> moveDockIndicator(initActive), 300);
+      setTimeout(()=> moveDockIndicator(initActive), 350);
     }
-    // Reposition on resize
     window.addEventListener('resize', ()=>{
       const active = dockLinks.find(a => a.classList.contains('active'));
       if(active) moveDockIndicator(active);
     }, {passive:true});
   }
-  // Also handle click fluid
   dockLinks.forEach(link=>{
     link.addEventListener('click', ()=>{
       dockLinks.forEach(a=>a.classList.remove('active'));
