@@ -1540,7 +1540,7 @@
     });
     ORDER.forEach(cat => {
       (BY_CAT[cat] || []).forEach(app => {
-        addItem(app.name + ' ' + cat + ' ' + (app.repo || ''),
+        addItem(app.name + ' ' + cat + ' ' + (app.repo || '') + ' ' + (app.desc || '') + ' ' + (app.tags || []).join(' '),
           `<span>${esc(app.name)} <em>${esc(cat)}</em></span><em>App</em>`, cat, app.name);
       });
     });
