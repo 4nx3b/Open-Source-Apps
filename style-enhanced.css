@@ -1387,3 +1387,114 @@ a {
   0%,100%{ transform: scale(1); }
   50%{ transform: scale(1.06); }
 }
+
+
+/* ========== v5 FINAL - Remove big glass, frosted blur like back-to-top, full names ========== */
+.cat-grid{
+  background: none !important;
+  border: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  padding: 0 16px !important;
+  gap: 10px !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+.cat-grid::before{
+  display: none !important;
+}
+@media (max-width: 520px){
+  .cat-grid{ grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+}
+@media (max-width: 400px){
+  .cat-grid{ grid-template-columns: 1fr !important; }
+}
+@media (min-width: 720px){
+  .cat-grid{
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)) !important;
+    padding: 0 24px !important;
+    gap: 12px !important;
+  }
+}
+
+/* Pills - frosted blur like .back-to-top button */
+.cat-pill{
+  background: rgba(255,255,255,0.05) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(255,255,255,0.10) !important;
+  border-radius: 12px !important;
+  padding: 10px 11px 10px 10px !important;
+  min-height: 50px !important;
+  box-shadow: none !important;
+  transition: background 180ms ease, border-color 180ms ease, transform 180ms ease !important;
+}
+.cat-pill:hover{
+  background: rgba(255,255,255,0.08) !important;
+  border-color: rgba(255,255,255,0.14) !important;
+  transform: translateY(-1px) !important;
+}
+.cat-pill:active{
+  transform: scale(0.97) !important;
+}
+.cat-pill .cat-ico{
+  width: 30px !important;
+  height: 30px !important;
+  min-width: 30px !important;
+  background: rgba(255,255,255,0.06) !important;
+  border: 1px solid rgba(255,255,255,0.07) !important;
+  border-radius: 8px !important;
+}
+.cat-pill-body{
+  min-width: 0 !important;
+  flex: 1 !important;
+}
+.cat-pill .cat-name{
+  font-size: 13px !important;
+  line-height: 1.18 !important;
+  font-weight: 520 !important;
+  white-space: normal !important;
+  word-break: normal !important;
+  overflow-wrap: break-word !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  display: block !important;
+  /* allow 2 lines max */
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+}
+.cat-pill .cat-count{
+  background: rgba(255,255,255,0.06) !important;
+  border: 1px solid rgba(255,255,255,0.06) !important;
+}
+.cat-pill:hover .cat-count{
+  background: rgba(255,255,255,0.10) !important;
+  color: var(--text) !important;
+  transform: none !important;
+}
+
+/* Featured - same frosted but with amber accent, no big glass */
+.cat-pill-featured{
+  grid-column: 1 / -1 !important;
+  background: rgba(255,180,84,0.09) !important;
+  border-color: rgba(255,180,84,0.24) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  animation: none !important;
+  background-size: auto !important;
+  box-shadow: none !important;
+}
+.cat-pill-featured::before{
+  background: linear-gradient(180deg, rgba(255,255,255,0.08), transparent 60%) !important;
+}
+.cat-pill-featured::after{
+  display: none !important;
+}
+.cat-pill-featured .cat-name{ color: var(--accent) !important; }
+.cat-pill-featured .cat-count{
+  background: var(--accent) !important;
+  color: #0a0a0a !important;
+  border-color: var(--accent) !important;
+}
