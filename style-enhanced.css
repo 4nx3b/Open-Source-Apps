@@ -90,19 +90,28 @@
 .cat-app:nth-child(7) { animation-delay: 0.30s; }
 .cat-app:nth-child(8) { animation-delay: 0.35s; }
 
+/* Category-popup apps are deliberately stationary on interaction. The
+   cursor-following .card-glow supplies the highlight without moving or
+   resizing a card (important when the overflow menu is open). */
 .cat-app {
-  transition: transform 0.25s cubic-bezier(.22, 1.3, .36, 1),
-              border-color 0.3s ease,
-              box-shadow 0.3s ease;
+  transition: border-color 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-.cat-app:hover {
-  transform: translateY(-5px) scale(1.02);
-  box-shadow: 0 20px 40px -18px rgba(0, 0, 0, 0.7);
+.cat-app:hover,
+.cat-app:focus-within,
+.cat-app[data-menu-open] {
+  transform: none !important;
+  box-shadow: none;
+}
+
+.cat-app:hover .card-glow,
+.cat-app:focus-within .card-glow,
+.cat-app[data-menu-open] .card-glow {
+  opacity: 1;
 }
 
 .cat-app:active {
-  transform: scale(0.985);
+  transform: none !important;
 }
 
 .app-tags span {
@@ -113,10 +122,11 @@
 }
 
 .cat-app:hover .app-tags span {
-  transform: translateY(-2px);
+  /* Keep the app card's contents stationary too; only their colour treatment changes. */
+  transform: none;
   border-color: rgba(255, 180, 84, 0.4);
   color: var(--text-dim);
-  box-shadow: 0 4px 12px rgba(255, 180, 84, 0.15);
+  box-shadow: none;
 }
 
 .cat-app:hover .app-tags span:nth-child(1) { transition-delay: 0.00s; }
@@ -132,8 +142,8 @@
 
 .cat-app:hover .app-icon,
 .cat-app:hover .cat-thumb {
-  transform: scale(1.12) rotate(-3deg);
-  box-shadow: 0 0 20px rgba(255, 180, 84, 0.25);
+  transform: none;
+  box-shadow: none;
 }
 
 /* ============================================================
@@ -701,8 +711,7 @@ a {
 
   /* Cards - subtle press effect */
   .feature-card:active,
-  .download-card:active,
-  .cat-app:active {
+  .download-card:active {
     transform: scale(0.98) !important;
     filter: brightness(0.95);
   }

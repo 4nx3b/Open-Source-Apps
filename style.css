@@ -419,7 +419,7 @@ kbd{
     transparent 0%, black 12%, black 88%, transparent 100%
   );
 }
-.cat-app{ position:relative; overflow:visible; height:auto; padding:13px 12px; border-radius:var(--radius-md); background:var(--panel); border:1px solid var(--panel-border); display:flex; gap:11px; transition:transform .1s ease, border-color .3s ease; }
+.cat-app{ position:relative; overflow:visible; height:auto; padding:13px 12px; border-radius:var(--radius-md); background:var(--panel); border:1px solid var(--panel-border); display:flex; gap:11px; transition:border-color .3s ease, background-color .3s ease, box-shadow .3s ease; }
 .cat-app:hover{ border-color:var(--accent); }
 .cat-app:hover .card-glow{ opacity:1; }
 .cat-app .app-icon{ width:40px;height:40px;flex-shrink:0; font-size:17px; margin-bottom:0; }
@@ -764,13 +764,13 @@ body.loaded .dock{ opacity:1; transform:translate(-50%, 0); transition:opacity .
    ============================================================ */
 
 /* app cards inside category popup: lift on hover / press on tap */
-.cat-app{ transition:transform .25s var(--ease), border-color .3s ease, box-shadow .3s ease; }
-.cat-app:hover{ transform:translateY(-3px); box-shadow:0 18px 40px -18px rgba(0,0,0,.7); }
-.cat-app:active{ transform:scale(.985); }
+.cat-app{ transition:border-color .3s ease, background-color .3s ease, box-shadow .3s ease; }
+.cat-app:hover, .cat-app:focus-within{ transform:none; }
+.cat-app:active{ transform:none; }
 
 /* app icon inside cards pops on hover */
 .cat-app .app-icon, .cat-app .cat-thumb{ transition:transform .35s var(--ease); }
-.cat-app:hover .app-icon, .cat-app:hover .cat-thumb{ transform:scale(1.1) rotate(-3deg); }
+.cat-app:hover .app-icon, .cat-app:hover .cat-thumb{ transform:none; }
 
 /* tag pills glow one-by-one on card hover */
 .app-tags span{ transition:border-color .3s ease, color .3s ease, transform .3s var(--ease); }
@@ -1118,7 +1118,7 @@ a{ transition:color .25s ease; }
 /* quick squish while the finger is down (no orange border) */
 @media (hover:none){
   .cat-pill:active{ transform:scale(.97); transition:transform .1s ease; }
-  .cat-app:active{ transform:scale(.985); transition:transform .1s ease; }
+  .cat-app:active{ transform:none; }
   .btn:active{ transform:scale(.95); }
   .icon-btn:active{ transform:scale(.94); }
 }
