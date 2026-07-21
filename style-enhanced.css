@@ -1402,7 +1402,8 @@ a {
 
 #cat-grid .cat-pill {
   position: relative !important;
-  display: block !important;
+  display: flex !important;
+  flex-direction: column !important;
   min-height: 306px !important;
   padding: 34px 34px 30px !important;
   overflow: hidden !important;
