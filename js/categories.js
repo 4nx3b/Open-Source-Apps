@@ -202,6 +202,17 @@
   const listEl   = $('#cat-list');
   const closeBtn = $('#cat-close');
 
+  // Desktop uses Lenis for smooth-scrolling the main page (see main.js).
+  // Lenis hijacks wheel/touch input at the document level, so without this
+  // flag it grabs scroll attempts made *inside* any popup and scrolls the
+  // page behind the popup instead of the popup's own list.
+  // `data-lenis-prevent` tells Lenis to leave these elements alone and let
+  // them scroll natively — this is why the bug only showed up on desktop
+  // (mobile never loads Lenis at all, see isTouch check in main.js).
+  ['#cat-list', '#palette-results', '.upload-modal', '.info-scroll', '.select-menu'].forEach(sel => {
+    $$(sel).forEach(el => el.setAttribute('data-lenis-prevent', ''));
+  });
+
   /* ---------------- CATEGORY CARDS ---------------- */
   function categorySummary(cat, count){
     return count
@@ -397,8 +408,19 @@
     titleEl.textContent = cat;
     render();
     overlay.classList.add('open');
+    // Stop Lenis immediately (don't wait for the MutationObserver tick) so
+    // wheel/touch input over the popup can't leak through to the page
+    // behind it — this matters most right when a search result opens the
+    // popup and scrollToApp() needs to scroll the list, not the page.
+    if(window.lenis) window.lenis.stop();
   }
-  function closeCat(){ overlay.classList.remove('open'); if(typeof closeCardMenu === 'function') closeCardMenu(); if(selectMode) exitSelectMode(); }
+  function closeCat(){
+    overlay.classList.remove('open');
+    if(typeof closeCardMenu === 'function') closeCardMenu();
+    if(selectMode) exitSelectMode();
+    // Only resume Lenis if no other popup is still open.
+    if(window.lenis && !$$('.modal-overlay.open').length) window.lenis.start();
+  }
 
   closeBtn.addEventListener('click', closeCat);
   overlay.addEventListener('click', e => { if(e.target === overlay) closeCat(); });
@@ -1514,6 +1536,10 @@
   if('MutationObserver' in window){
     const obs = new MutationObserver(() => {
       const anyOpen = $$('.modal-overlay.open').length > 0;
+      // Toggle on <html> as well as <body>: the real scrolling element in
+      // standards mode is <html>, so locking overflow on body alone left
+      // the document itself free to scroll behind the popup on desktop.
+      document.documentElement.classList.toggle('modal-open', anyOpen);
       document.body.classList.toggle('modal-open', anyOpen);
       if(window.lenis){
         if(anyOpen) window.lenis.stop();
