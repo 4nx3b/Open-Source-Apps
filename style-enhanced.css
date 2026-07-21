@@ -1394,9 +1394,9 @@ a {
 /* Full category cards — intentionally mirrors the repository-card reference. */
 #cat-grid.cat-grid {
   display: grid !important;
-  grid-template-columns: 1fr !important;
-  gap: 18px !important;
-  max-width: 480px !important;
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 14px !important;
+  max-width: 620px !important;
   padding: 0 16px !important;
 }
 
@@ -1404,8 +1404,8 @@ a {
   position: relative !important;
   display: flex !important;
   flex-direction: column !important;
-  min-height: 176px !important;
-  padding: 20px 20px 18px !important;
+  min-height: 120px !important;
+  padding: 18px 18px 16px !important;
   overflow: hidden !important;
   border: 1px solid rgba(255,255,255,.14) !important;
   border-radius: 14px !important;
@@ -1449,15 +1449,7 @@ a {
   vertical-align: middle !important;
 }
 #cat-grid .cat-pill .cat-sub {
-  display: block !important;
-  min-height: 34px;
-  margin: 9px 0 12px !important;
-  color: #b7b7bb !important;
-  font-size: 13px !important;
-  font-weight: 400 !important;
-  line-height: 1.45 !important;
-  overflow-wrap: anywhere !important;
-  word-break: break-word !important;
+  display: none !important;
 }
 #cat-grid .cat-meta-rows { display: grid; gap: 7px; }
 #cat-grid .cat-meta-row { display: grid; grid-template-columns: auto minmax(18px, 1fr) auto; align-items: center; gap: 9px; color: #aaaab0; font-size: 12.5px; line-height: 1; }
@@ -1467,16 +1459,15 @@ a {
 #cat-grid .cat-meta-row strong { color: #e3e3e5; font-size: 12.5px; font-weight: 500; white-space: nowrap; }
 
 #cat-grid .cat-pill .cat-count { display: none !important; }
-#cat-grid .cat-pill-featured { grid-column: auto !important; min-height: 176px !important; background: #101011 !important; animation: none !important; }
+#cat-grid .cat-pill-featured { grid-column: auto !important; min-height: 120px !important; background: #101011 !important; animation: none !important; }
 #cat-grid .cat-pill-featured::before { display: none !important; }
 #cat-grid .cat-pill-featured .cat-ico { width: 34px !important; height: 34px !important; min-width: 34px !important; background: rgba(255,255,255,.035) !important; color: var(--accent) !important; }
 #cat-grid .cat-pill-featured .cat-name { color: #eeeeef !important; font-size: 18px !important; }
 
 @media (max-width: 480px) {
-  #cat-grid.cat-grid { gap: 12px !important; padding: 0 14px !important; }
-  #cat-grid .cat-pill { min-height: 160px !important; padding: 16px 18px 15px !important; }
-  #cat-grid .cat-pill .cat-name { font-size: 16px !important; }
-  #cat-grid .cat-pill .cat-sub { font-size: 12.5px !important; }
+  #cat-grid.cat-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; padding: 0 14px !important; }
+  #cat-grid .cat-pill { min-height: 108px !important; padding: 15px 14px 14px !important; }
+  #cat-grid .cat-pill .cat-name { font-size: 15px !important; }
 }
 
 /* The grid container must never sit at opacity 0. The old reveal-on-scroll
