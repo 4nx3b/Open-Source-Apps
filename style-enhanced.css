@@ -1475,3 +1475,18 @@ a {
   #cat-grid .cat-pill .cat-name { font-size: 27px !important; }
   #cat-grid .cat-pill .cat-sub { font-size: 16px !important; }
 }
+
+/* The full card layout must not inherit the old pill entrance animation.
+   Its `both` fill mode can retain an opacity of zero on mobile browsers. */
+#cat-grid .cat-pill:not(.skel),
+#cat-grid.in .cat-pill:not(.skel) {
+  animation: none !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: none !important;
+}
+#cat-grid .cat-pill:not(.skel) > *,
+#cat-grid .cat-pill:not(.skel) .cat-pill-body > * {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
