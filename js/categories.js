@@ -152,7 +152,13 @@
     if(!DB.ready) return;
     renderSkeletonGrid();
     try {
-      const [apps, meta] = await Promise.all([DB.fetchApps(), DB.fetchMeta()]);
+      // A stalled database request should fall back to the directory rather
+      // than leaving the grid as blank skeleton cards indefinitely.
+      const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('Database request timed out')), 12000));
+      const [apps, meta] = await Promise.race([
+        Promise.all([DB.fetchApps(), DB.fetchMeta()]),
+        timeout
+      ]);
       UPLOADS = apps.map(r => ({
         id: r.id, name: r.name, cat: r.cat, icon: r.icon,
         desc: r.description, tags: Array.isArray(r.tags) ? r.tags : [r.cat], license: r.license,
@@ -172,7 +178,14 @@
       if(overlay.classList.contains('open')) render();
     } catch(e){
       console.error('DB load error:', e);
-      toast('Could not load apps from the database.');
+      // Never leave the directory stuck on empty skeleton cards when a remote
+      // request or a render-time error fails. The local/default category list
+      // remains usable and the error is still visible in the console.
+      rebuildData();
+      renderGrid();
+      buildPaletteApps();
+      updateStats();
+      toast('Could not load apps from the database. Showing available categories.');
     }
   }
 
