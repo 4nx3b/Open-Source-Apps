@@ -220,6 +220,9 @@
     return Math.floor(days / 365) + ' years ago';
   }
   function renderGrid(){
+    // The older reveal system applies a fill-mode animation to `.in` grids.
+    // These full cards are static, so remove it before replacing the cards.
+    grid.classList.remove('in');
     grid.innerHTML = ORDER.map((cat, idx) => {
       const apps = BY_CAT[cat] || [];
       const n = apps.length;
@@ -229,7 +232,7 @@
         ? `<span class="cat-act cat-act-icon" role="button" tabindex="0" data-act="icon" title="Change icon" aria-label="Change icon for ${esc(cat)}">✎</span>
            <span class="cat-act cat-act-del" role="button" tabindex="0" data-act="del" title="Delete category" aria-label="Delete ${esc(cat)} category">✕</span>`
         : '';
-      return `<button class="cat-pill" data-cat="${esc(cat)}" data-cursor="pointer" aria-label="Open ${esc(cat)} category" style="--i:${idx}">
+      return `<button class="cat-pill" data-cat="${esc(cat)}" data-cursor="pointer" aria-label="Open ${esc(cat)} category" style="--i:${idx};display:block!important;opacity:1!important;visibility:visible!important;color:#eeeeef!important">
         <span class="cat-ico">${categoryIconHTML(cat)}</span>
         <span class="cat-pill-body">
           <span class="cat-name">${esc(cat)}</span>
