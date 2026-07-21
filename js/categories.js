@@ -233,15 +233,17 @@
            <span class="cat-act cat-act-del" role="button" tabindex="0" data-act="del" title="Delete category" aria-label="Delete ${esc(cat)} category">✕</span>`
         : '';
       const isFeatured = cat === 'Featured';
+      const featuredSparkSVG = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2.5c.6 3.05 1.25 4.86 2.15 5.85.99.9 2.8 1.55 5.85 2.15-3.05.6-4.86 1.25-5.85 2.15-.9.99-1.55 2.8-2.15 5.85-.6-3.05-1.25-4.86-2.15-5.85-.99-.9-2.8-1.55-5.85-2.15 3.05-.6 4.86-1.25 5.85-2.15.9-.99 1.55-2.8 2.15-5.85Z" fill="currentColor"/><path d="M19 14c.34 1.13.7 1.8 1.2 2.3.5.5 1.17.86 2.3 1.2-1.13.34-1.8.7-2.3 1.2-.5.5-.86 1.17-1.2 2.3-.34-1.13-.7-1.8-1.2-2.3-.5-.5-1.17-.86-2.3-1.2 1.13-.34 1.8-.7 2.3-1.2.5-.5.86-1.17 1.2-2.3Z" fill="currentColor"/></svg>';
+      const iconMarkup = isFeatured ? featuredSparkSVG : categoryIconHTML(cat);
       return `<button class="cat-pill${isFeatured ? ' cat-pill-featured' : ''}" data-cat="${esc(cat)}" data-cursor="pointer" aria-label="Open ${esc(cat)} category" style="--i:${idx};display:block!important;opacity:1!important;visibility:visible!important;color:#eeeeef!important">
         ${isFeatured ? '<span class="cat-featured-badge" aria-hidden="true">★ Top pick</span>' : ''}
-        <span class="cat-ico">${categoryIconHTML(cat)}</span>
+        <span class="cat-ico">${iconMarkup}</span>
         <span class="cat-pill-body">
           <span class="cat-name">${esc(cat)}</span>
           <span class="cat-sub">${esc(categorySummary(cat, n))}</span>
           <span class="cat-meta-rows" aria-hidden="true">
             <span class="cat-meta-row"><span class="cat-meta-label"><b>▢</b> Apps</span><i></i><strong>${n}</strong></span>
-            <span class="cat-meta-row"><span class="cat-meta-label"><b>★</b> Featured</span><i></i><strong>${highlighted}</strong></span>
+            ${isFeatured ? '' : `<span class="cat-meta-row"><span class="cat-meta-label"><b>★</b> Featured</span><i></i><strong>${highlighted}</strong></span>`}
             <span class="cat-meta-row"><span class="cat-meta-label"><b>◷</b> Last added</span><i></i><strong>${esc(cardTime(newest && newest.added))}</strong></span>
           </span>
         </span>
