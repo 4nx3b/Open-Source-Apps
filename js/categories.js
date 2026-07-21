@@ -48,8 +48,32 @@
   }
   function saveJSON(key, val){ try { localStorage.setItem(key, JSON.stringify(val)); } catch(e){} }
 
-  // Resolve the icon for a category: custom emoji wins over the built-in glyph.
-  function glyphFor(cat){ return CUSTOM_GLYPHS[cat] || GLYPH[cat] || '•'; }
+  // Resolve the text fallback for a category. Custom emoji wins, followed by a
+  // built-in glyph; unknown categories use their initials rather than a dot.
+  function categoryInitials(cat){
+    const words = String(cat || '').trim().split(/\s+/).filter(Boolean);
+    return (words.slice(0, 2).map(word => word.charAt(0)).join('') || '?').toUpperCase();
+  }
+  function glyphFor(cat){ return CUSTOM_GLYPHS[cat] || GLYPH[cat] || categoryInitials(cat); }
+
+  // Categories without an assigned icon get a deterministic SVG mark generated
+  // from their name. It is local (no third-party request), consistent across
+  // visits, and gives every newly created category its own visual identity.
+  function categoryIconHTML(cat){
+    const assigned = CUSTOM_GLYPHS[cat] || GLYPH[cat];
+    if(assigned) return esc(assigned);
+    let hash = 0;
+    for(const char of String(cat)) hash = ((hash * 31) + char.charCodeAt(0)) >>> 0;
+    const hue = 24 + (hash % 26); // stay within Openhouse's warm accent palette
+    const shape = hash % 3;
+    const initials = esc(categoryInitials(cat));
+    const mark = shape === 0
+      ? '<path d="M7 7h4v4H7zM13 7h4v4h-4zM7 13h4v4H7zM13 13h4v4h-4z" fill="currentColor"/>'
+      : shape === 1
+        ? '<path d="M12 5.5 18.5 9v6L12 18.5 5.5 15V9L12 5.5Z" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="2.2" fill="currentColor"/>'
+        : '<path d="M6.5 8.5 12 5l5.5 3.5v7L12 19l-5.5-3.5v-7Z" fill="currentColor" opacity=".3"/><path d="M8 10h8M8 14h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>';
+    return `<svg class="cat-auto-icon" viewBox="0 0 24 24" aria-hidden="true" style="--cat-hue:${hue}"><defs><linearGradient id="cat-grad-${hash}" x1="0" y1="0" x2="1" y2="1"><stop stop-color="hsl(${hue} 95% 66%)"/><stop offset="1" stop-color="hsl(${Math.min(hue + 18, 60)} 92% 54%)"/></linearGradient></defs><g style="color:url(#cat-grad-${hash})">${mark}</g><text x="12" y="21" text-anchor="middle">${initials}</text></svg>`;
+  }
 
   // Categories start empty — owners populate them through the upload flow.
   // Categories the owner deleted earlier stay hidden until recreated.
@@ -163,22 +187,44 @@
   const listEl   = $('#cat-list');
   const closeBtn = $('#cat-close');
 
-  /* ---------------- CATEGORY PILLS ---------------- */
+  /* ---------------- CATEGORY CARDS ---------------- */
+  function categorySummary(cat, count){
+    return count
+      ? `Browse ${count} open-source ${cat.toLowerCase()} app${count === 1 ? '' : 's'} in this collection.`
+      : `A curated collection of open-source ${cat.toLowerCase()} apps.`;
+  }
+  function cardTime(iso){
+    if(!iso) return 'No apps yet';
+    const then = new Date(iso).getTime();
+    if(isNaN(then)) return 'Recently updated';
+    const days = Math.floor((Date.now() - then) / 86400000);
+    if(days <= 0) return 'Today';
+    if(days === 1) return '1 day ago';
+    if(days < 30) return days + ' days ago';
+    if(days < 365) return Math.floor(days / 30) + ' months ago';
+    return Math.floor(days / 365) + ' years ago';
+  }
   function renderGrid(){
     grid.innerHTML = ORDER.map((cat, idx) => {
-      const n = (BY_CAT[cat] || []).length;
+      const apps = BY_CAT[cat] || [];
+      const n = apps.length;
+      const highlighted = apps.filter(app => app.starred).length;
+      const newest = apps.reduce((latest, app) => !latest || String(app.added || '') > String(latest.added || '') ? app : latest, null);
       const acts = isAdmin
         ? `<span class="cat-act cat-act-icon" role="button" tabindex="0" data-act="icon" title="Change icon" aria-label="Change icon for ${esc(cat)}">✎</span>
            <span class="cat-act cat-act-del" role="button" tabindex="0" data-act="del" title="Delete category" aria-label="Delete ${esc(cat)} category">✕</span>`
         : '';
-      const featured = cat === 'Featured';
-      const sub = featured ? `<span class="cat-sub">The best of the best handpicked apps will be shown here.</span>` : '';
-      return `<button class="cat-pill${featured ? ' cat-pill-featured' : ''}" data-cat="${esc(cat)}" data-cursor="pointer" aria-label="Open ${esc(cat)} category" style="--i:${idx}">
-        ${cat === 'Featured' 
-        ? `<span class="cat-ico cat-ico-featured"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.5L13.8 8.2H19.7L14.9 11.7L16.7 17.5L12 14.2L7.3 17.5L9.1 11.7L4.3 8.2H10.2L12 2.5Z" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linejoin="round"/><path d="M19 3.5L19.8 5.5L21.8 6.3L19.8 7.1L19 9.1L18.2 7.1L16.2 6.3L18.2 5.5L19 3.5Z" fill="currentColor"/><path d="M6 15.5L6.6 17L8.1 17.6L6.6 18.2L6 19.7L5.4 18.2L3.9 17.6L5.4 17L6 15.5Z" fill="currentColor"/></svg></span>`
-        : `<span class="cat-ico">${esc(glyphFor(cat))}</span>`}
-        <span class="cat-pill-body"><span class="cat-name">${esc(cat)}</span>${sub}</span>
-        <span class="cat-count">${n}</span>
+      return `<button class="cat-pill" data-cat="${esc(cat)}" data-cursor="pointer" aria-label="Open ${esc(cat)} category" style="--i:${idx}">
+        <span class="cat-ico">${categoryIconHTML(cat)}</span>
+        <span class="cat-pill-body">
+          <span class="cat-name">${esc(cat)}</span>
+          <span class="cat-sub">${esc(categorySummary(cat, n))}</span>
+          <span class="cat-meta-rows" aria-hidden="true">
+            <span class="cat-meta-row"><span class="cat-meta-label"><b>▢</b> Apps</span><i></i><strong>${n}</strong></span>
+            <span class="cat-meta-row"><span class="cat-meta-label"><b>★</b> Featured</span><i></i><strong>${highlighted}</strong></span>
+            <span class="cat-meta-row"><span class="cat-meta-label"><b>◷</b> Last added</span><i></i><strong>${esc(cardTime(newest && newest.added))}</strong></span>
+          </span>
+        </span>
         ${acts}
       </button>`;
     }).join('');
