@@ -368,7 +368,7 @@
     const tags = (a.tags || []).concat([a.license]).map(t => `<span>${esc(t)}</span>`).join('');
     const menuBtn = `<button class="cat-menu-btn" data-cursor="pointer" aria-label="App actions" aria-haspopup="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg></button>`;
     const starBadge = (a.starred && cur.cat !== 'Featured') ? `<span class="cat-star-badge" title="Featured" aria-label="Featured">★</span>` : '';
-    return `<article class="cat-app tilt-card" data-cursor="pointer" data-repo="${esc(a.repo || '')}" data-name="${esc(a.name)}" data-cat="${esc(a.cat)}" style="animation-delay:${Math.min(i*0.05, 0.3).toFixed(2)}s">
+    return `<article class="cat-app" data-cursor="pointer" data-repo="${esc(a.repo || '')}" data-name="${esc(a.name)}" data-cat="${esc(a.cat)}" style="animation-delay:${Math.min(i*0.05, 0.3).toFixed(2)}s">
       <div class="card-glow"></div>
       ${menuBtn}${starBadge}
       ${media}
@@ -497,13 +497,10 @@
       return;
     }
     cardMenuCtx = { cat, name };
-    // The ⋮ button sits in the card's corner, right where the tilt-hover
-    // effect is most extreme. Reset any tilt transform now and suppress it
-    // for as long as the menu stays open, so the card doesn't visually grow
-    // and clip against the popup's edge.
+    // Keep the selected card highlighted while its actions are visible.
+    // Category cards intentionally have no tilt/scale interaction.
     const card = btn.closest('.cat-app');
     if(card){
-      card.style.transform = '';
       card.dataset.menuOpen = '1';
       cardMenuOpenCard = card;
     }
