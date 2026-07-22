@@ -1636,10 +1636,12 @@ a {
 }
 
 /* ============================================================
-   17. POPUP SCROLL MOTION BLUR (removed)
+   17. POPUP SCROLL MOTION BLUR
    ============================================================ */
 
 .modal-overlay.open .modal {
+  /* filter is applied inline via JS (velocity-based); this just
+     guarantees a GPU layer so the blur doesn't jank */
   backface-visibility: hidden;
 }
 
