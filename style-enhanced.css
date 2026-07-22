@@ -1620,3 +1620,41 @@ a {
   opacity: 1 !important;
   visibility: visible !important;
 }
+
+/* ============================================================
+   16. TILT CARD 3D DEPTH (why-openhouse feature cards)
+   ============================================================ */
+
+.feature-card.tilt-card {
+  transform-style: preserve-3d;
+  will-change: transform, box-shadow;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .28);
+  transition: box-shadow 260ms ease-out;
+}
+.feature-card.tilt-card.tilting {
+  transition: box-shadow 80ms linear;
+}
+
+/* ============================================================
+   17. POPUP SCROLL MOTION BLUR
+   ============================================================ */
+
+.modal-overlay.open .modal {
+  /* filter is applied inline via JS (velocity-based); this just
+     guarantees a GPU layer so the blur doesn't jank */
+  backface-visibility: hidden;
+}
+
+/* ============================================================
+   18. PAGE PULL STRETCH / BOUNCE
+   ============================================================ */
+
+main#top {
+  transform-origin: top center;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .feature-card.tilt-card { transition: none !important; }
+  main#top { transform: none !important; transition: none !important; }
+}
