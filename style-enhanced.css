@@ -2139,17 +2139,7 @@ body::after {
 }
 
 /* ─── HERO SUBTITLE — WORD-BY-WORD FADE ─── */
-.hero-sub {
-  opacity: 0;
-  transform: translateY(15px);
-}
-body.loaded .hero-sub.reveal-up.in {
-  animation: heroSubIn 0.8s var(--ease) 0.2s both;
-}
-@keyframes heroSubIn {
-  to { opacity: 1; transform: translateY(0); }
-}
-
+/* -- HERO SUBTITLE -- FADE IN (opacity:0 removed to prevent hiding content) -- */
 /* ─── ICON BUTTON — RIPPLE ON CLICK ─── */
 .icon-btn {
   position: relative;
