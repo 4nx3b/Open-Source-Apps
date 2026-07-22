@@ -1602,7 +1602,7 @@ a {
 @keyframes rippleInkOut {
   to { transform: scale(22); opacity: 0; }
 }
-.ripple-host { position: relative; overflow: hidden; }
+.ripple-host { overflow: hidden; }
 
 /* ============================================================
    21. CURSOR GLOW TRAIL (desktop only, disabled on touch + reduced motion)
@@ -1910,4 +1910,28 @@ body.egg-rainbow { animation: rainbowPulse 2.4s linear 2; }
   .sparkle-burst,
   .fun-fact-bubble { animation: none !important; }
   #matrix-rain-canvas { display: none !important; }
+}
+
+/* ============================================================
+   29. KILL STUCK HOVER-GLOW ON TOUCH DEVICES
+   Mobile browsers keep :hover active after a tap until something
+   else is tapped, so any hover-triggered glow/spotlight on the
+   category pills was getting "parked" wherever the user last
+   tapped. Hover-only visuals have no place on a device with no
+   hover, so disable them outright for coarse pointers.
+   ============================================================ */
+@media (hover: none) {
+  .cat-pill:hover,
+  .cat-pill:hover::before,
+  .cat-pill:hover::after,
+  .cat-pill::before,
+  .cat-pill::after {
+    opacity: 0 !important;
+    background: none !important;
+    background-image: none !important;
+    box-shadow: none !important;
+  }
+  .cat-pill:hover {
+    transform: none !important;
+  }
 }
