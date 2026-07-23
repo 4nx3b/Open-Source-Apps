@@ -241,7 +241,6 @@
       const newest = apps.reduce((latest, app) => !latest || String(app.added || '') > String(latest.added || '') ? app : latest, null);
       const acts = isAdmin
         ? `<span class="cat-act cat-act-rename" role="button" tabindex="0" data-act="rename" title="Rename & icon" aria-label="Rename ${esc(cat)} category">✏</span>
-           <span class="cat-act cat-act-icon" role="button" tabindex="0" data-act="icon" title="Change icon" aria-label="Change icon for ${esc(cat)}">✎</span>
            <span class="cat-act cat-act-del" role="button" tabindex="0" data-act="del" title="Delete category" aria-label="Delete ${esc(cat)} category">✕</span>`
         : '';
       const isFeatured = cat === 'Featured';
@@ -268,8 +267,7 @@
         const act = e.target.closest('.cat-act');
         if(act){
           e.stopPropagation();
-          if(act.dataset.act === 'icon') openIconEditor(btn.dataset.cat);
-          else if(act.dataset.act === 'rename') renameCategory(btn.dataset.cat);
+          if(act.dataset.act === 'rename') renameCategory(btn.dataset.cat);
           else deleteCategory(btn.dataset.cat);
           return;
         }

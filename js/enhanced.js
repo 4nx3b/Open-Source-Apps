@@ -782,7 +782,7 @@
     }
   })();
 
-  // ---- Easter Egg 2: Triple-click the brand logo 7 times ----
+  // ---- Easter Egg 2: Click the brand logo 7 times ----
   (function(){
     let brandClicks = 0;
     let brandTimer = null;
@@ -794,30 +794,15 @@
         brandTimer = setTimeout(() => { brandClicks = 0; }, 1500);
         if(brandClicks >= 7){
           brandClicks = 0;
-          // Use a fixed overlay instead of body filter to prevent scroll jank
-          let overlay = document.getElementById('invert-overlay');
-          if(!overlay){
-            overlay = document.createElement('div');
-            overlay.id = 'invert-overlay';
-            overlay.style.cssText = 'position:fixed;inset:0;z-index:99998;pointer-events:none;background:transparent;mix-blend-mode:difference;';
-            document.body.appendChild(overlay);
-            // Add a white background overlay to create the invert effect via difference blend
-            const white = document.createElement('div');
-            white.id = 'invert-bg';
-            white.style.cssText = 'position:fixed;inset:0;z-index:99997;pointer-events:none;background:#fff;opacity:0;transition:opacity 0.3s ease;';
-            document.body.appendChild(white);
-          }
-          const whiteBg = document.getElementById('invert-bg');
-          if(whiteBg) whiteBg.style.opacity = '1';
+          // Use backdrop-filter invert: zero layout impact, no scroll jank, self-cleaning
+          const html = document.documentElement;
+          html.style.transition = 'backdrop-filter 0.4s ease';
+          html.style.backdropFilter = 'invert(1) hue-rotate(180deg)';
           showToast('🥚 Inverted reality mode activated!');
           if(navigator.vibrate) navigator.vibrate([30,80,30,80,30]);
           setTimeout(() => {
-            if(whiteBg) whiteBg.style.opacity = '0';
-            setTimeout(() => { 
-              if(whiteBg) whiteBg.remove();
-              const ov = document.getElementById('invert-overlay');
-              if(ov) ov.remove();
-            }, 400);
+            html.style.backdropFilter = '';
+            setTimeout(() => { html.style.transition = ''; }, 500);
           }, 3000);
         }
       });
