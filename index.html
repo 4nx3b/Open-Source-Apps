@@ -295,9 +295,13 @@
       <label class="field"><span>Thumbnail <em>(optional)</em></span><input type="file" id="up-thumb" accept="image/*"><img class="thumb-preview" id="up-thumb-preview" alt="" hidden></label>
       <input type="hidden" id="up-license">
       <p class="login-error" id="upload-error"></p>
+      <label class="field field-checkbox" id="multi-mode-field" style="display:flex;flex-direction:row;align-items:center;gap:8px;margin:4px 0;">
+        <input type="checkbox" id="up-multi" style="width:18px;height:18px;cursor:pointer;">
+        <span style="font-size:13px;color:var(--text-dim);">Post multiple apps — stay on this form after publishing</span>
+      </label>
       <div class="upload-actions">
         <button type="button" class="btn btn-outline" id="upload-cancel" data-cursor="pointer">Cancel</button>
-        <button type="submit" class="btn btn-primary" data-cursor="pointer">Publish app</button>
+        <button type="submit" class="btn btn-primary" id="upload-submit-btn" data-cursor="pointer">Publish app</button>
       </div>
     </form>
   </div>
@@ -351,6 +355,36 @@
     </div>
     <div class="changelog-content" id="changelog-website">
       <div class="changelog-date">JULY 2026</div>
+      <div class="changelog-item">
+        <span class="changelog-icon">🔍</span>
+        <span><strong>Search bar in category dropdown</strong> — filter categories when uploading apps<span class="changelog-new-badge">NEW</span></span>
+        <span class="changelog-date-right">23 Jul</span>
+      </div>
+      <div class="changelog-item">
+        <span class="changelog-icon">📝</span>
+        <span><strong>Rename category pills</strong> — edit category names directly from the grid<span class="changelog-new-badge">NEW</span></span>
+        <span class="changelog-date-right">23 Jul</span>
+      </div>
+      <div class="changelog-item">
+        <span class="changelog-icon">📦</span>
+        <span><strong>Post multiple apps at once</strong> — stay & add another mode in upload popup<span class="changelog-new-badge">NEW</span></span>
+        <span class="changelog-date-right">23 Jul</span>
+      </div>
+      <div class="changelog-item">
+        <span class="changelog-icon">🔄</span>
+        <span><strong>No default category selected</strong> — upload form starts with blank category<span class="changelog-new-badge">NEW</span></span>
+        <span class="changelog-date-right">23 Jul</span>
+      </div>
+      <div class="changelog-item">
+        <span class="changelog-icon">🥚</span>
+        <span><strong>8 new Easter eggs</strong> — Konami code, triple-click, shake device, resize spam & more<span class="changelog-new-badge">NEW</span></span>
+        <span class="changelog-date-right">23 Jul</span>
+      </div>
+      <div class="changelog-item">
+        <span class="changelog-icon">🎨</span>
+        <span><strong>Animation polish & performance</strong> — smoother transitions, reduced jank, removed dead code<span class="changelog-new-badge">NEW</span></span>
+        <span class="changelog-date-right">23 Jul</span>
+      </div>
       <div class="changelog-item">
         <span class="changelog-icon">🎉</span>
         <span><strong>Mega animation overhaul</strong> — cursor trail, aurora background, floating orbs, button ripples, section transitions<span class="changelog-new-badge">NEW</span></span>

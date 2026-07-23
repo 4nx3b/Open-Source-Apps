@@ -573,7 +573,20 @@ body.modal-open{ pointer-events:none; overflow:hidden; }
   margin-left:2px; transition:background .2s, color .2s;
 }
 .cat-act-icon:hover{ background:var(--accent-soft); color:var(--accent); }
+.cat-act-rename:hover{ background:var(--accent-soft); color:var(--accent); }
 .cat-act-del:hover{ background:rgba(255,90,90,.18); color:#ff7a7a; }
+
+/* ================= SELECT SEARCH BAR ================= */
+.select-search{ display:flex; align-items:center; gap:8px; padding:8px 10px; border-bottom:1px solid var(--panel-border); position:sticky; top:0; background:rgba(18,18,22,.92); backdrop-filter:blur(10px); z-index:1; border-radius:12px 12px 0 0; }
+.select-search svg{ color:var(--text-faint); flex-shrink:0; }
+.select-search-input{ flex:1; background:none; border:none; outline:none; color:var(--text); font-size:13px; font-family:var(--font-display); padding:4px 0; }
+.select-search-input::placeholder{ color:var(--text-faint); }
+.select-items-wrap{ max-height:38vh; overflow-y:auto; scrollbar-width:none; -ms-overflow-style:none; padding:4px; }
+.select-items-wrap::-webkit-scrollbar{ display:none; }
+
+/* ================= MULTI POST CHECKBOX ================= */
+.field-checkbox input[type="checkbox"]{ accent-color:var(--accent); }
+#multi-mode-field{ user-select:none; }
 
 /* icon / emoji editor */
 .icon-modal{ width:min(440px,100%); }
