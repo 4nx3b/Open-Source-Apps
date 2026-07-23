@@ -1475,8 +1475,7 @@ a {
   margin: 0 !important;
   z-index: 4 !important;
 }
-#cat-grid .cat-pill .cat-act-icon { right: 46px !important; }
-#cat-grid .cat-pill .cat-act-rename { right: 80px !important; }
+#cat-grid .cat-pill .cat-act-rename { right: 46px !important; }
 #cat-grid .cat-pill .cat-act-del  { right: 12px !important; }
 /* Reserve room at the bottom of the card so the buttons never sit on top
    of the last meta row's text. Only applies when the buttons exist
